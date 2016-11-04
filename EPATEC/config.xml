@@ -1,0 +1,7 @@
+﻿<?xml version="1.0"?>
+<DataBase>
+  <username>emmanuel</username>
+  <password>password</password>
+  <database>EPATEC</database>
+  <server>GHOST\SQLSERVER</server>
+</DataBase>
