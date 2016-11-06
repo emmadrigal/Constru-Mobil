@@ -7,5 +7,8 @@ namespace EPATEC.Models
 {
     public class EmpleadoSucursal
     {
+        public long Id_EmpleadoSucursal { get; set; }
+        public long Id_Empleado { get; set; }
+        public long Id_Sucursal { get; set; }
     }
 }
