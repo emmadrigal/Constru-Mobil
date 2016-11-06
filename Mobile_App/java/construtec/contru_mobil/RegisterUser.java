@@ -1,5 +1,6 @@
 package com.example.emmanuel.construmobil;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -50,5 +51,17 @@ public class RegisterUser extends AppCompatActivity {
         });
 
         //TODO set birth as a date dialog
+    }
+
+    /**
+     * Login method, it is called when the correct button is pressed and checks if the user is correct
+     * @param view that calls this method
+     */
+    public void LogIn(View view){
+        //TODO send data to database for storage
+        //TODO check if user id already exists
+
+        Intent intent = new Intent(this, MainScreen.class);
+        startActivity(intent);
     }
 }

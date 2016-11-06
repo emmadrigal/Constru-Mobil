@@ -22,6 +22,9 @@ public class MainScreen extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+
+        //TODO populate lists here
+
     }
 
     /**
@@ -39,10 +42,10 @@ public class MainScreen extends AppCompatActivity {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
             switch (position){
-                case 1: return userDetails.newInstance(position + 1);
-                case 2: return pedidos.newInstance(position + 1);
-                case 3: return productos.newInstance(position + 1);
-                case 4: return categorias.newInstance(position + 1);
+                case 0: return userDetails.newInstance(position + 1);
+                case 1: return pedidos.newInstance(position + 1);
+                case 2: return productos.newInstance(position + 1);
+                case 3: return categorias.newInstance(position + 1);
                 default: return opciones.newInstance(position + 1);
             }
         }
@@ -287,5 +290,9 @@ public class MainScreen extends AppCompatActivity {
             //TODO buttons Logic
             return rootView;
         }
+    }
+
+    public void delete(View v){
+        //TODO avoid delete from vendedores
     }
 }
