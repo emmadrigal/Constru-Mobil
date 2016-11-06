@@ -8,6 +8,6 @@ namespace EPATEC.Models
     public class Sucursal
     {
         /// Propiedad de id
-        public int id { get; set; }
+        public long id { get; set; }
     }
 }

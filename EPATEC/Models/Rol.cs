@@ -7,7 +7,7 @@ namespace EPATEC.Models
 {
     public class Rol
     {
-        public int Id_rol { get; set; }
+        public long Id_rol { get; set; }
         public string nombre { get; set; }
     }
 }
