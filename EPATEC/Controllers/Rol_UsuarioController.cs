@@ -14,7 +14,7 @@ namespace EPATEC.Controllers
         [HttpGet]
         public IHttpActionResult getRol_Usuario(long id)
         {
-            var product = Connection.Instance.get_Rol(id);
+            var product = Connection.Instance.get_Rol_Usuario(id);
             if (product == null)
             {
                 return NotFound();

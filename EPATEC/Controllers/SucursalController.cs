@@ -12,7 +12,7 @@ namespace EPATEC.Controllers
     {
         [Route("{id}")]
         [HttpGet]
-        public IHttpActionResult getSucursal(int id)
+        public IHttpActionResult getSucursal(long id)
         {
             var product = Connection.Instance.get_Sucursal(id);
             if (product == null)
@@ -40,7 +40,7 @@ namespace EPATEC.Controllers
 
         [Route("{id}")]
         [HttpDelete]
-        public IHttpActionResult deleteSucursal(int id)
+        public IHttpActionResult deleteSucursal(long id)
         {
             Connection.Instance.eliminar_Sucursal(id);
             return Ok();

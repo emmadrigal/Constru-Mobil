@@ -22,15 +22,15 @@ namespace EPATEC.Controllers
             return Ok(product);
         }
 
-        [Route("~/getAllProducts")]
+        [Route("~/getAllProducto")]
         [HttpGet]
         public IHttpActionResult getAllProducto()
         {
-            var products = Connection.Instance.get_AllProducts();
+            var products = Connection.Instance.get_AllProducto();
             return Ok(products);
         }
 
-        [Route("~/getAllProductsCat{id}")]
+        [Route("~/getAllProductsCat/{id}")]
         [HttpGet]
         public IHttpActionResult getAllProductoCat(string id)
         {
@@ -38,9 +38,9 @@ namespace EPATEC.Controllers
             return Ok(products);
         }
 
-        [Route("~/getAllProductosProveedor{id}")]
+        [Route("~/getAllProductosProveedor/{id}")]
         [HttpGet]
-        public IHttpActionResult getAllProductosProveedor(int id)
+        public IHttpActionResult getAllProductosProveedor(long id)
         {
             var products = Connection.Instance.get_AllProductsProv(id);
             return Ok(products);

@@ -22,7 +22,7 @@ namespace EPATEC.Controllers
             return Ok(product);
         }
 
-        [Route("~/getAllProducts/{id}")]
+        [Route("~/getAllPedidoSucursal/{id}")]
         [HttpGet]
         public IHttpActionResult getAllPedidos(long id)
         {
@@ -32,7 +32,7 @@ namespace EPATEC.Controllers
 
         [Route("~/PedidoCliente/{id}")]
         [HttpGet]
-        public IHttpActionResult getPedidoCliente(int id)
+        public IHttpActionResult getPedidoCliente(long id)
         {
             var products = Connection.Instance.get_PedidoCliente(id);
             return Ok(products);
@@ -40,7 +40,7 @@ namespace EPATEC.Controllers
 
         [HttpPost]
         [Route("")]
-        public IHttpActionResult postProducto([FromBody]Models.Pedido pedido)
+        public IHttpActionResult postPedido([FromBody]Models.Pedido pedido)
         {
             Connection.Instance.crear_Pedido(pedido);
             return Ok();
@@ -49,7 +49,7 @@ namespace EPATEC.Controllers
 
         [Route("{id}")]
         [HttpDelete]
-        public IHttpActionResult deletePedido(int id)
+        public IHttpActionResult deletePedido(long id)
         {
             Connection.Instance.eliminar_Pedido(id);
             return Ok();

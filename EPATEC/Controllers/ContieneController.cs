@@ -32,7 +32,7 @@ namespace EPATEC.Controllers
 
         [Route("{id}/{campo}/{newValue}")]
         [HttpPut]
-        public IHttpActionResult PutContiene(string id, string campo, string newValue)
+        public IHttpActionResult PutContiene(long id, string campo, string newValue)
         {
             if (campo == "Cantidad")
             {

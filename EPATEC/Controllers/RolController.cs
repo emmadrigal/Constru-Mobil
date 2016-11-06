@@ -12,7 +12,7 @@ namespace EPATEC.Controllers
     {
         [Route("{id}")]
         [HttpGet]
-        public IHttpActionResult getRol(int id)
+        public IHttpActionResult getRol(long id)
         {
             var product = Connection.Instance.get_Rol(id);
             if (product == null)
@@ -32,7 +32,7 @@ namespace EPATEC.Controllers
 
         [Route("{id}/{campo}/{newValue}")]
         [HttpPut]
-        public IHttpActionResult PutRol(int id, string campo, string newValue)
+        public IHttpActionResult PutRol(long id, string campo, string newValue)
         {
             if (campo == "nombre ")
             {
@@ -51,7 +51,7 @@ namespace EPATEC.Controllers
 
         [Route("{id}")]
         [HttpDelete]
-        public IHttpActionResult deleteRol(int id)
+        public IHttpActionResult deleteRol(long id)
         {
             Connection.Instance.eliminar_Rol(id);
             return Ok();
