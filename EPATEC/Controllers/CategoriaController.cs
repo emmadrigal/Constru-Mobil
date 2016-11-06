@@ -43,7 +43,7 @@ namespace EPATEC.Controllers
 
         [HttpPost]
         [Route("")]
-        public IHttpActionResult postProducto([FromBody]Models.Categoria categoria)
+        public IHttpActionResult postCategoria([FromBody]Models.Categoria categoria)
         {
             Connection.Instance.crear_Categoria(categoria);
             return Ok();
