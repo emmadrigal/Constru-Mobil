@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DatabaseConnection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -36,7 +37,7 @@ namespace EPATEC.Controllers
         {
             if (campo == "Cantidad")
             {
-                Connection.Instance.update_Contiene(id, campo, newValue);
+                Connection.Instance.update_Contiene_Cantidad(id, newValue);
             }
             return Ok();
         }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DatabaseConnection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -26,7 +27,7 @@ namespace EPATEC.Controllers
         [HttpGet]
         public IHttpActionResult getAllCategories()
         {
-            var products = Connection.Instance.get_AllCategories();
+            var products = Connection.Instance.get_AllCategoria();
             return Ok(products);
         }
 
@@ -36,7 +37,7 @@ namespace EPATEC.Controllers
         {
             if (campo == "Descripción")
             {
-                Connection.Instance.update_Categoria(id,campo, newValue);
+                Connection.Instance.update_Categoria_Descripcion(id, newValue);
             }
             return Ok();
         }

@@ -21,5 +21,7 @@ namespace EPATEC.Models
 
         /// Propiedad de Nombre
         public string Hora { get; set; }
+
+        public List<ProductoPedido> productos { get; set; }
     }
 }

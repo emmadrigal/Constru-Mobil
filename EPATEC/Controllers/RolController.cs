@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DatabaseConnection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -34,9 +35,9 @@ namespace EPATEC.Controllers
         [HttpPut]
         public IHttpActionResult PutRol(long id, string campo, string newValue)
         {
-            if (campo == "nombre ")
+            if (campo == "nombre")
             {
-                Connection.Instance.update_Rol(id, campo, newValue);
+                Connection.Instance.update_Rol_Nombre(id, newValue);
             }
             return Ok();
         }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DatabaseConnection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -26,7 +27,7 @@ namespace EPATEC.Controllers
         [HttpGet]
         public IHttpActionResult getAllPedidos(long id)
         {
-            var products = Connection.Instance.get_AllPedidosSuc(id);
+            var products = Connection.Instance.get_Pedido_By_Sucursal(id);
             return Ok(products);
         }
 
@@ -34,7 +35,7 @@ namespace EPATEC.Controllers
         [HttpGet]
         public IHttpActionResult getPedidoCliente(long id)
         {
-            var products = Connection.Instance.get_PedidoCliente(id);
+            var products = Connection.Instance.get_Pedido_By_Cliente(id);
             return Ok(products);
         }
 

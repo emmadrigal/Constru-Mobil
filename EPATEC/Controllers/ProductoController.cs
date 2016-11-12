@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DatabaseConnection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -34,7 +35,7 @@ namespace EPATEC.Controllers
         [HttpGet]
         public IHttpActionResult getAllProductoCat(string id)
         {
-            var products = Connection.Instance.get_AllProducsCat(id);
+            var products = Connection.Instance.get_Producto_By_Categoria(id);
             return Ok(products);
         }
 
@@ -42,7 +43,7 @@ namespace EPATEC.Controllers
         [HttpGet]
         public IHttpActionResult getAllProductosProveedor(long id)
         {
-            var products = Connection.Instance.get_AllProductsProv(id);
+            var products = Connection.Instance.get_Producto_By_Proveedor(id);
             return Ok(products);
         }
 
@@ -50,9 +51,21 @@ namespace EPATEC.Controllers
         [HttpPut]
         public IHttpActionResult PutProducto(string id, string campo, string newValue)
         {
-            if (campo == "Descripción" || campo == "Cantidad_Disponible" || campo == "Precio")
+            if (campo == "Descripción")
             {
-                Connection.Instance.update_Producto(id, campo, newValue);
+                Connection.Instance.update_Producto_Descripcion(id, newValue);
+            }
+            else if (campo == "Cantidad_Disponible")
+            {
+                Connection.Instance.update_Producto_Cantidad(id, Int32.Parse(newValue));
+            }
+            else if (campo == "Precio")
+            {
+                Connection.Instance.update_Producto_Precio(id, Int32.Parse(newValue));
+            }
+            else if (campo == "Nombre")
+            {
+                Connection.Instance.update_Producto_Nombre(id, newValue);
             }
             return Ok();
         }
