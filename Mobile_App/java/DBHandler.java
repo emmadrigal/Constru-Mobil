@@ -103,6 +103,18 @@ public class DBHandler extends SQLiteOpenHelper {
         deleteFromDB("USUARIO", "Cedula", String.valueOf(id));
     }
 
+    public void updateUsuario(Usuario usuario){
+        ContentValues values = new ContentValues();
+
+        values.put("Nombre", usuario.Nombre);
+        values.put("Apellido", usuario.Apellido);
+        values.put("Lugar_de_Residencia", usuario.Lugar_de_Residencia);
+        values.put("Fecha_de_Nacimiento", usuario.Fecha_de_Nacimiento);
+        values.put("Telefono", usuario.Telefono);
+
+        updateFromDB("USUARIO", values, "Cedula="+usuario.Cedula);
+    }
+
     //Métodos para la tabla producto
     public void addProducto(Producto prod){
         ContentValues values = new ContentValues();
@@ -123,6 +135,20 @@ public class DBHandler extends SQLiteOpenHelper {
         deleteFromDB("PRODUCTO", "Nombre_Producto", nombre);
     }
 
+    public void updateProducto(Producto prod){
+        ContentValues values = new ContentValues();
+
+        values.put("Id_Sucursal", prod.Id_Sucursal);
+        values.put("Cedula_Proveedor", prod.Cedula_Proveedor);
+        values.put("Nombre_Categoria", prod.Nombre_Categoria);
+        values.put("descripcion", prod.descripcion);
+        values.put("exento", prod.exento);
+        values.put("cantidad", prod.cantidad);
+        values.put("precio", prod.precio);
+
+        updateFromDB("PRODUCTO", values, "Nombre_Producto="+ prod.Nombre_Producto);
+    }
+
     //Métodos para tabla categoría
     public void addCategoria(Categoria categoria){
         ContentValues values = new ContentValues();
@@ -135,6 +161,14 @@ public class DBHandler extends SQLiteOpenHelper {
 
     public void deleteCategoria(String nombre){
         deleteFromDB("CATEGORIA", "Nombre", nombre);
+    }
+    
+    public void updateCategoria(Categoria categoria){
+        ContentValues values = new ContentValues();
+        
+        values.put("Descripcion", categoria.Descripcion);
+        
+        updateFromDB("CATEGORIA", values, "Nombre="+categoria.Nombre);
     }
 
     //Métodos para tabla pedido
@@ -152,6 +186,17 @@ public class DBHandler extends SQLiteOpenHelper {
 
     public void deletePedido(long id){
         deleteFromDB("PEDIDO", "Id_Pedido", String.valueOf(id));
+    }
+    
+    public void updatePedido(Pedido pedido){
+        ContentValues values = new ContentValues();
+        
+        values.put("Cedula_Cliente", pedido.Cedula_Cliente);
+        values.put("Id_Sucursal", pedido.Id_Sucursal);
+        values.put("Telefono_Preferido", pedido.Telefono_Preferido);
+        values.put("Hora_de_Creación", pedido.Hora_de_Creación);
+        
+        updateFromDB("PEDIDO", values, "Id_Pedido="+ pedido.Id_Pedido);
     }
 
     //Métodos para tabla sucursal
@@ -205,6 +250,12 @@ public class DBHandler extends SQLiteOpenHelper {
     public void deleteFromDB(String table, String propiedad, String value){
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(table, propiedad+"="+value, null);
+        db.close();
+    }
+
+    public void updateFromDB(String table, ContentValues values, String upFilter){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.update(table, values, upFilter, null);
         db.close();
     }
 }
