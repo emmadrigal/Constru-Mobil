@@ -1,6 +1,6 @@
-package models;
+package prueba.appprueba.models;
 
 public class Categoria {
-    public String nombre;
-    public String descripcion;
+    public String Nombre;
+    public String Descripcion;
 }
