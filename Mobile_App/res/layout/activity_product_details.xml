@@ -50,7 +50,7 @@
             android:layout_weight="1"
             android:text="Descripción: " />
         <TextView
-            android:id="@+id/userId"
+            android:id="@+id/description"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="15sp"
@@ -74,7 +74,7 @@
             android:layout_weight="1"
             android:text="Sucursal:" />
         <TextView
-            android:id="@+id/phoneNumber"
+            android:id="@+id/sucursal"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="15sp"
@@ -98,7 +98,7 @@
             android:layout_weight="1"
             android:text="Proveedor: " />
         <TextView
-            android:id="@+id/role"
+            android:id="@+id/supplier"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="15sp"
@@ -122,7 +122,7 @@
             android:layout_weight="1"
             android:text="Categoría: " />
         <TextView
-            android:id="@+id/code"
+            android:id="@+id/category"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="15sp"
@@ -146,7 +146,7 @@
             android:layout_weight="1"
             android:text="Exento: " />
         <TextView
-            android:id="@+id/code"
+            android:id="@+id/exento"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="15sp"
@@ -170,7 +170,31 @@
             android:layout_weight="1"
             android:text="Cantidad Disponible: " />
         <TextView
-            android:id="@+id/code"
+            android:id="@+id/quantity"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:drawablePadding="5dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="20dp"
+        android:gravity="center">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:gravity="center_vertical"
+            android:drawablePadding="5dp"
+            android:layout_weight="1"
+            android:text="Precio: " />
+        <TextView
+            android:id="@+id/price"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="15sp"

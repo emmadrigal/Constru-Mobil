@@ -12,6 +12,7 @@ import android.widget.Spinner;
 public class RegisterUser extends AppCompatActivity {
     private EditText phone;
     private Spinner spinner;
+    private String origin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,28 +28,45 @@ public class RegisterUser extends AppCompatActivity {
         // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
-        spinner.setAdapter(adapter);
 
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        Intent intent = getIntent();
+        origin = intent.getStringExtra("origin");
 
-            @Override
-            public void onItemSelected(AdapterView<?> arg0, View arg1,
-                                       int arg2, long arg3) {
-                String imc_met = spinner.getSelectedItem().toString();
+        if(origin.equals("login")){
+            spinner.setAdapter(adapter);
 
-                if(imc_met.equals("Cliente")){
-                    phone.setVisibility(View.VISIBLE);
-                    phone.setText("");
+            spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+                @Override
+                public void onItemSelected(AdapterView<?> arg0, View arg1,
+                                           int arg2, long arg3) {
+                    String imc_met = spinner.getSelectedItem().toString();
+
+                    if(imc_met.equals("Cliente")){
+                        phone.setVisibility(View.VISIBLE);
+                        phone.setText("");
+                    }
+                    else{
+                        phone.setVisibility(View.GONE);
+                    }
+
                 }
-                else{
-                    phone.setVisibility(View.GONE);
-                }
 
-            }
+                @Override
+                public void onNothingSelected(AdapterView<?> arg0) {}
+            });
+            spinner.setVisibility(View.VISIBLE);
+        } else if(origin.equals("newUser")){
+            spinner.setVisibility(View.GONE);
+            phone.setVisibility(View.VISIBLE);
+            phone.setText("");
+        }
+        else if(origin.equals("newSupplier")){
+            spinner.setVisibility(View.GONE);
+            phone.setVisibility(View.GONE);
+        }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> arg0) {}
-        });
+
 
         //TODO set birth as a date dialog
     }
@@ -61,7 +79,12 @@ public class RegisterUser extends AppCompatActivity {
         //TODO send data to database for storage
         //TODO check if user id already exists
 
-        Intent intent = new Intent(this, MainScreen.class);
-        startActivity(intent);
+        if(origin.equals("login")){
+            Intent intent = new Intent(this, MainScreen.class);
+            startActivity(intent);
+
+        } else{
+            finish();
+        }
     }
 }

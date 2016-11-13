@@ -1,5 +1,7 @@
 package com.example.emmanuel.construmobil;
 
+import android.app.Dialog;
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -9,8 +11,25 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import models.Pedido;
+import models.Producto;
 
 public class detallesPedido extends AppCompatActivity {
+
+    private static final List<String> productosList = new ArrayList<>();
+    private static ArrayAdapter productosAdapter;
+
+    static Pedido pedido;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,9 +38,44 @@ public class detallesPedido extends AppCompatActivity {
 
         SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
+
+        //TODO get information from the DBHandler
+        pedido = new Pedido();
+        pedido.Id_Pedido = 1;
+        pedido.id_sucursal = 54;
+        pedido.telefono = 12345;
+        pedido.cedula = 304960478;
+        pedido.hora = "15:00:15";
+        pedido.productos = new ArrayList<>();
+        Producto producto;
+
+        producto = new Producto();
+        producto.Nombre_Producto = "Carro";
+        pedido.productos.add(producto);
+
+        producto = new Producto();
+        producto.Nombre_Producto = "Refrigeradora";
+        pedido.productos.add(producto);
+
+        producto = new Producto();
+        producto.Nombre_Producto = "Clavo";
+        pedido.productos.add(producto);
+
+        producto = new Producto();
+        producto.Nombre_Producto = "Tornillo";
+        pedido.productos.add(producto);
+
+        productosAdapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_list_item_1,
+                productosList );
+        updateProductos();
+
         // Set up the ViewPager with the sections adapter.
         ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+
+        //TODO hide retirar producto if user isn't the provider
     }
 
     /**
@@ -39,7 +93,7 @@ public class detallesPedido extends AppCompatActivity {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
             switch (position){
-                case 1: return pedidoDetails.newInstance(position + 1);
+                case 0: return pedidoDetails.newInstance(position + 1);
                 default: return productList.newInstance(position + 1);
             }
         }
@@ -54,15 +108,9 @@ public class detallesPedido extends AppCompatActivity {
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "Información del Usuario";
+                    return "Información del Pedido";
                 case 1:
-                    return "Mis Pedidos";
-                case 2:
                     return "Productos";
-                case 3:
-                    return "Categorías";
-                case 4:
-                    return "Opciones";
             }
             return null;
         }
@@ -106,7 +154,48 @@ public class detallesPedido extends AppCompatActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.pedido_information, container, false);
 
-            //TODO add updates
+            TextView sucursal =  (TextView) rootView.findViewById(R.id.sucursal);
+            TextView clientID =  (TextView) rootView.findViewById(R.id.clientID);
+            final TextView phoneNumber =  (TextView) rootView.findViewById(R.id.phoneNumber);
+            TextView creationTime =  (TextView) rootView.findViewById(R.id.creationTime);
+
+            sucursal.setText(Long.toString(pedido.id_sucursal));
+            clientID.setText(Long.toString(pedido.cedula));
+            creationTime.setText(pedido.hora);
+
+            phoneNumber.setText(Long.toString(pedido.telefono));
+
+            View.OnClickListener updatePhone = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    final Dialog d = new Dialog(getContext());
+                    d.setContentView(R.layout.text_popup);
+                    Button setValue = (Button) d.findViewById(R.id.set);
+                    Button cancelAction = (Button) d.findViewById(R.id.cancel);
+
+                    final EditText np = (EditText) d.findViewById(R.id.newValue);
+
+                    setValue.setOnClickListener(new View.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(View v) {
+                            //TODO make call the the DBhandler
+                            phoneNumber.setText(np.getText());
+                            d.dismiss();
+                        }
+                    });
+                    cancelAction.setOnClickListener(new View.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(View v) {
+                            d.dismiss();
+                        }
+                    });
+                    d.show();
+                }
+            };
+            phoneNumber.setOnClickListener(updatePhone);
+
 
             return rootView;
         }
@@ -150,9 +239,30 @@ public class detallesPedido extends AppCompatActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.pager_view_list, container, false);
 
-            //TODO populate list from my productList
+            final ListView list = (ListView) rootView.findViewById(R.id.List);
+
+            list.setAdapter(productosAdapter);
+
+            list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                public void onItemClick(AdapterView<?> parent, View view,
+                                        int position, long id) {
+                    String data = (String) list.getItemAtPosition(position);
+
+                    //TODO create pop-up to change number of materials or delete
+                }
+            });
 
             return rootView;
         }
+    }
+
+    void updateProductos(){
+        productosList.clear();
+
+        for(int i = 0; i < pedido.productos.size(); i++){
+            productosList.add(pedido.productos.get(i).Nombre_Producto);
+        }
+
+        productosAdapter.notifyDataSetChanged();
     }
 }

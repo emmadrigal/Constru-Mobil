@@ -34,7 +34,8 @@ public class LoginActivity extends AppCompatActivity {
         if(!userId.equals("")){
             if(userExists(userName, Integer.parseInt(userId))){
                 //TODO test user name before advancing
-                Intent intent = new Intent(this, RegisterUser.class);
+                Intent intent = new Intent(this, MainScreen.class);
+                intent.putExtra("id", Integer.parseInt(userId));
                 startActivity(intent);
             }else{
                 mUserName.setError("User Name and Id don't match");
@@ -48,6 +49,7 @@ public class LoginActivity extends AppCompatActivity {
      */
     public void SignUp(View view){
         Intent intent = new Intent(this, RegisterUser.class);
+        intent.putExtra("origin", "login");
         startActivity(intent);
     }
 
