@@ -63,7 +63,7 @@ public class DBHandler extends SQLiteOpenHelper {
             "Id_Pedido bigint FOREIGN KEY REFERENCES PEDIDO(Id_Pedido), " +
             "Cantidad int);";
 
-    public DBHelper(Context context) {
+    public DBHandler(Context context) {
         super(context, DB_NAME, null, DB_SCHEME_VERSION);
     }
 
@@ -323,5 +323,56 @@ public class DBHandler extends SQLiteOpenHelper {
         if (cursor != null) {cursor.moveToFirst();}
 
         return cursor;
+    }
+    
+    public List<Pedido> getPedidosCliente(long id){
+        List<Pedido> pedidos = new ArrayList<Pedido>();
+        String selectQuery = "SELECT  * FROM " + "PEDIDO" + " WHERE " + "Cedula_Cliente" + " = " + id;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                Pedido pedido = new Pedido();
+                pedido.setId_Pedido(cursor.getLong(cursor.getColumnIndex("Id_Pedido")));
+                pedido.setCedula_Cliente(id);
+                pedido.setId_Sucursal(cursor.getLong(cursor.getColumnIndex("Id_Sucursal")));
+                pedido.setTelefono_Preferido(cursor.getInt(cursor.getColumnIndex("Telefono_Preferido")));
+                pedido.setHora_de_Creación(cursor.getString(cursor.getColumnIndex("Hora_de_Creación")));
+
+                // Adding contact to list
+                pedidos.add(pedido);
+            } while (cursor.moveToNext());
+        }
+
+        return pedidos;
+    }
+    public List<Producto> getProductosVendedor(long id){
+        List<Producto> productos = new ArrayList<Producto>();
+        String selectQuery = "SELECT  * FROM " + "PRODUCTO" + " WHERE " + "Cedula_Proveedor" + " = " + id;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                Producto producto = new Producto();
+                producto.setNombre_Producto(cursor.getString(cursor.getColumnIndex("Nombre_Producto")));
+                producto.setId_Sucursal(cursor.getLong(cursor.getColumnIndex("Id_Sucursal")));
+                producto.setCedula_Proveedor(id);
+                producto.setNombre_Categoria(cursor.getString(cursor.getColumnIndex("Nombre_Categoria")));
+                producto.setDescripcion(cursor.getString(cursor.getColumnIndex("descripcion")));
+                producto.setExento(cursor.getInt(cursor.getColumnIndex("exento")));
+                producto.setCantidad(cursor.getInt(cursor.getColumnIndex("cantidad")));
+                producto.setPrecio(cursor.getInt(cursor.getColumnIndex("precio")));
+
+                // Adding contact to list
+                productos.add(producto);
+            } while (cursor.moveToNext());
+        }
+        return productos;
     }
 }
