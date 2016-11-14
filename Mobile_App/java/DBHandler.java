@@ -50,11 +50,11 @@ public class DBHandler extends SQLiteOpenHelper {
 
     private static final String SQL_CREATE_TABLE_EMPLEADOSUCURSAL = "CREATE TABLE EmpleadoSucursal(" +
             "Id_EmpleadoSucursal bigint NOT NULL AUTOINCREMENT PRIMARY KEY, " +
-            "id_emplado bigint FOREIGN KEY REFERENCES USUARIO(Cedula), " +
+            "id_empleado bigint FOREIGN KEY REFERENCES USUARIO(Cedula), " +
             "id_sucursal bigint FOREIGN KEY REFERENCES SUCURSAL(Id_Sucursal));";
 
     private static final String SQL_CREATE_TABLE_ROL = "CREATE TABLE ROL (" +
-            "Id_rol bigint PRIMARY KEY IDENTITY(1,1), " +
+            "Id_rol bigint PRIMARY KEY AUTOINCREMENT, " +
             "nombre varchar(max));";
 
     private static final String SQL_CREATE_TABLE_CONTIENE = "CREATE TABLE CONTIENE (" +
@@ -63,7 +63,7 @@ public class DBHandler extends SQLiteOpenHelper {
             "Id_Pedido bigint FOREIGN KEY REFERENCES PEDIDO(Id_Pedido), " +
             "Cantidad int);";
 
-    public DBHandler(Context context) {
+    public DBHelper(Context context) {
         super(context, DB_NAME, null, DB_SCHEME_VERSION);
     }
 
@@ -115,6 +115,20 @@ public class DBHandler extends SQLiteOpenHelper {
         updateFromDB("USUARIO", values, "Cedula="+usuario.Cedula);
     }
 
+    public Usuario getUsuario(long id){
+        Cursor cursor = getRowFromDB("USUARIO", "Cedula", String.valueOf(id));
+
+        Usuario usuario = new Usuario();
+        usuario.setCedula(id);
+        usuario.setApellido(cursor.getString(cursor.getColumnIndex("Apellido")));
+        usuario.setNombre(cursor.getString(cursor.getColumnIndex("Nombre")));
+        usuario.setLugar_de_Residencia(cursor.getString(cursor.getColumnIndex("Lugar_de_Residencia")));
+        usuario.setFecha_de_Nacimiento(cursor.getString(cursor.getColumnIndex("Fecha_de_Nacimiento")));
+        usuario.setTelefono(cursor.getInt(cursor.getColumnIndex("Telefono")));
+
+        return usuario;
+    }
+
     //Métodos para la tabla producto
     public void addProducto(Producto prod){
         ContentValues values = new ContentValues();
@@ -149,6 +163,22 @@ public class DBHandler extends SQLiteOpenHelper {
         updateFromDB("PRODUCTO", values, "Nombre_Producto="+ prod.Nombre_Producto);
     }
 
+    public Producto getProducto(String nombre){
+        Cursor cursor = getRowFromDB("PRODUCTO", "Nombre_Producto", nombre);
+
+        Producto producto = new Producto();
+        producto.setNombre_Producto(nombre);
+        producto.setId_Sucursal(cursor.getLong(cursor.getColumnIndex("Id_Sucursal")));
+        producto.setCedula_Proveedor(cursor.getLong(cursor.getColumnIndex("Cedula_Proveedor")));
+        producto.setNombre_Categoria(cursor.getString(cursor.getColumnIndex("Nombre_Categoria")));
+        producto.setDescripcion(cursor.getString(cursor.getColumnIndex("descripcion")));
+        producto.setExento(cursor.getInt(cursor.getColumnIndex("exento")));
+        producto.setCantidad(cursor.getInt(cursor.getColumnIndex("cantidad")));
+        producto.setPrecio(cursor.getInt(cursor.getColumnIndex("precio")));
+
+        return producto;
+    }
+
     //Métodos para tabla categoría
     public void addCategoria(Categoria categoria){
         ContentValues values = new ContentValues();
@@ -162,13 +192,23 @@ public class DBHandler extends SQLiteOpenHelper {
     public void deleteCategoria(String nombre){
         deleteFromDB("CATEGORIA", "Nombre", nombre);
     }
-    
+
     public void updateCategoria(Categoria categoria){
         ContentValues values = new ContentValues();
-        
+
         values.put("Descripcion", categoria.Descripcion);
-        
+
         updateFromDB("CATEGORIA", values, "Nombre="+categoria.Nombre);
+    }
+    
+    private Categoria getCategoria(String nombre){
+        Cursor cursor = getRowFromDB("CATEGORIA", "Nombre", nombre);
+        
+        Categoria categoria = new Categoria();
+        categoria.setNombre(nombre);
+        categoria.setDescripcion(cursor.getString(cursor.getColumnIndex("Descripcion")));
+        
+        return categoria;
     }
 
     //Métodos para tabla pedido
@@ -187,16 +227,29 @@ public class DBHandler extends SQLiteOpenHelper {
     public void deletePedido(long id){
         deleteFromDB("PEDIDO", "Id_Pedido", String.valueOf(id));
     }
-    
+
     public void updatePedido(Pedido pedido){
         ContentValues values = new ContentValues();
-        
+
         values.put("Cedula_Cliente", pedido.Cedula_Cliente);
         values.put("Id_Sucursal", pedido.Id_Sucursal);
         values.put("Telefono_Preferido", pedido.Telefono_Preferido);
         values.put("Hora_de_Creación", pedido.Hora_de_Creación);
-        
+
         updateFromDB("PEDIDO", values, "Id_Pedido="+ pedido.Id_Pedido);
+    }
+    
+    public Pedido getPedido(long id){
+        Cursor cursor = getRowFromDB("PEDIDO", "Id_Pedido", String.valueOf(id));
+
+        Pedido pedido = new Pedido();
+        pedido.setId_Pedido(id);
+        pedido.setCedula_Cliente(cursor.getLong(cursor.getColumnIndex("Cedula_Cliente")));
+        pedido.setId_Sucursal(cursor.getLong(cursor.getColumnIndex("Id_Sucursal")));
+        pedido.setTelefono_Preferido(cursor.getInt(cursor.getColumnIndex("Telefono_Preferido")));
+        pedido.setHora_de_Creación(cursor.getString(cursor.getColumnIndex("Hora_de_Creación")));
+
+        return pedido;
     }
 
     //Métodos para tabla sucursal
@@ -257,5 +310,18 @@ public class DBHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.update(table, values, upFilter, null);
         db.close();
+    }
+
+    public Cursor getRowFromDB(String table, String row, String id){
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selectQuery = "SELECT  * FROM " + table + " WHERE "
+                + row + " = " + id;
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor != null) {cursor.moveToFirst();}
+
+        return cursor;
     }
 }
