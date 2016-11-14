@@ -22,4 +22,28 @@ public class Usuario {
         this.Fecha_de_Nacimiento = date;
         this.Telefono = telefono;
     }
+
+    public void setCedula(long cedula){
+        this.Cedula = cedula;
+    }
+
+    public void setNombre(String nombre){
+        this.Nombre = nombre;
+    }
+
+    public void setApellido(String apellido){
+        this.Apellido = apellido;
+    }
+
+    public void setLugar_de_Residencia(String lugar_de_Residencia){
+        this.Lugar_de_Residencia = lugar_de_Residencia;
+    }
+
+    public void setFecha_de_Nacimiento(String fecha_de_nacimiento){
+        this.Fecha_de_Nacimiento = fecha_de_nacimiento;
+    }
+
+    public void setTelefono(int telefono){
+        this.Telefono = telefono;
+    }
 };
