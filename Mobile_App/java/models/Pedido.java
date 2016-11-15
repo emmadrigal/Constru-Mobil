@@ -10,7 +10,16 @@ public class Pedido {
     public int Telefono_Preferido;
     public String Hora_de_Creación;
 
-    public List<Producto> productos = new LinkedList<Producto>();
+    public List<Contiene> productos = new LinkedList<Contiene>();
+
+    public Pedido(){}
+    public Pedido(long cedula_Cliente, long id_Sucursal, int telefono_Preferido, String hora_de_Creación, List productos){
+        this.Cedula_Cliente = cedula_Cliente;
+        this.Id_Sucursal = id_Sucursal;
+        this.Telefono_Preferido = telefono_Preferido;
+        this.Hora_de_Creación = hora_de_Creación;
+        this.productos = productos;
+    }
 
     public void setId_Pedido(long id){
         this.Id_Pedido = id;
@@ -30,5 +39,9 @@ public class Pedido {
 
     public void setHora_de_Creación(String hora_de_Creación){
         this.Hora_de_Creación = hora_de_Creación;
+    }
+
+    public void setProductos(List productos){
+        this.productos = productos;
     }
 }
