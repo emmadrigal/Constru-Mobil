@@ -63,8 +63,23 @@ public class DBHandler extends SQLiteOpenHelper {
             "Id_Pedido bigint FOREIGN KEY REFERENCES PEDIDO(Id_Pedido), " +
             "Cantidad int);";
 
-    public DBHandler(Context context) {
+    private static DBHanlder DBHanlder;
+    private Context context;
+
+    private DBHanlder(Context context) {
         super(context, DB_NAME, null, DB_SCHEME_VERSION);
+        this.context = context;
+    }
+
+    public static DBHanlder getSingletonInstance(Context context) {
+        if (DBHanlder == null){
+            DBHanlder = new DBHanlder(context);
+        }
+        else{
+            System.out.println("No se puede crear el objeto porque ya existe un objeto de la clase DBHanlder");
+        }
+
+        return DBHanlder;
     }
 
     @Override
@@ -200,14 +215,14 @@ public class DBHandler extends SQLiteOpenHelper {
 
         updateFromDB("CATEGORIA", values, "Nombre="+categoria.Nombre);
     }
-    
+
     private Categoria getCategoria(String nombre){
         Cursor cursor = getRowFromDB("CATEGORIA", "Nombre", nombre);
-        
+
         Categoria categoria = new Categoria();
         categoria.setNombre(nombre);
         categoria.setDescripcion(cursor.getString(cursor.getColumnIndex("Descripcion")));
-        
+
         return categoria;
     }
 
@@ -238,7 +253,7 @@ public class DBHandler extends SQLiteOpenHelper {
 
         updateFromDB("PEDIDO", values, "Id_Pedido="+ pedido.Id_Pedido);
     }
-    
+
     public Pedido getPedido(long id){
         Cursor cursor = getRowFromDB("PEDIDO", "Id_Pedido", String.valueOf(id));
 
@@ -248,6 +263,7 @@ public class DBHandler extends SQLiteOpenHelper {
         pedido.setId_Sucursal(cursor.getLong(cursor.getColumnIndex("Id_Sucursal")));
         pedido.setTelefono_Preferido(cursor.getInt(cursor.getColumnIndex("Telefono_Preferido")));
         pedido.setHora_de_Creación(cursor.getString(cursor.getColumnIndex("Hora_de_Creación")));
+        pedido.setProductos(getProductosPedido(id));
 
         return pedido;
     }
@@ -315,22 +331,20 @@ public class DBHandler extends SQLiteOpenHelper {
     public Cursor getRowFromDB(String table, String row, String id){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String selectQuery = "SELECT  * FROM " + table + " WHERE "
-                + row + " = " + id;
+        String selectQuery = "SELECT * FROM " + table + " WHERE " + row + " = " + id;
 
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         if (cursor != null) {cursor.moveToFirst();}
-
+        
+        db.close();
+        
         return cursor;
     }
-    
+
     public List<Pedido> getPedidosCliente(long id){
         List<Pedido> pedidos = new ArrayList<Pedido>();
-        String selectQuery = "SELECT  * FROM " + "PEDIDO" + " WHERE " + "Cedula_Cliente" + " = " + id;
-
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        Cursor cursor = getRowFromDB("PEDIDO", "Cedula_Cliente", String.valueOf(id));
 
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
@@ -349,12 +363,10 @@ public class DBHandler extends SQLiteOpenHelper {
 
         return pedidos;
     }
+    
     public List<Producto> getProductosVendedor(long id){
         List<Producto> productos = new ArrayList<Producto>();
-        String selectQuery = "SELECT  * FROM " + "PRODUCTO" + " WHERE " + "Cedula_Proveedor" + " = " + id;
-
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        Cursor cursor = getRowFromDB("PRODUCTO", "Cedula_Proveedor", String.valueOf(id));
 
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
@@ -375,4 +387,81 @@ public class DBHandler extends SQLiteOpenHelper {
         }
         return productos;
     }
+
+    public List<Contiene> getProductosPedido(long id){
+        List<Contiene> productos = new ArrayList<Contiene>();
+
+        Cursor cursor = getRowFromDB("CONTIENE", "Id_Pedido", String.valueOf(id));
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                Contiene contiene = new Contiene();
+                contiene.setId_Contiene(cursor.getLong(cursor.getColumnIndex("id_Contiene")));
+                contiene.setNombre_Producto(cursor.getString(cursor.getColumnIndex("Nombre_Producto")));
+                contiene.setId_Pedido(id);
+                contiene.setCantidad(cursor.getInt(cursor.getColumnIndex("Cantidad")));
+
+                // Adding contact to list
+                productos.add(contiene);
+            } while (cursor.moveToNext());
+        }
+        return productos;
+    }
+    
+    public List<Producto> getAllProductos(){
+        List<Producto> productos = new ArrayList<Producto>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selectQuery = "SELECT * FROM PRODUCTO";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                Producto producto = new Producto();
+                producto.setNombre_Producto(cursor.getString(cursor.getColumnIndex("Nombre_Producto")));
+                producto.setId_Sucursal(cursor.getLong(cursor.getColumnIndex("Id_Sucursal")));
+                producto.setCedula_Proveedor(cursor.getLong(cursor.getColumnIndex("Cedula_Proveedor")));
+                producto.setNombre_Categoria(cursor.getString(cursor.getColumnIndex("Nombre_Categoria")));
+                producto.setDescripcion(cursor.getString(cursor.getColumnIndex("descripcion")));
+                producto.setExento(cursor.getInt(cursor.getColumnIndex("exento")));
+                producto.setCantidad(cursor.getInt(cursor.getColumnIndex("cantidad")));
+                producto.setPrecio(cursor.getInt(cursor.getColumnIndex("precio")));
+
+                // Adding contact to list
+                productos.add(producto);
+            } while (cursor.moveToNext());
+        }
+        
+        db.close();
+        return productos;
+    }
+
+    public List<Categoria> getAllCategorias(){
+        List<Categoria> categorias = new ArrayList<Categoria>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selectQuery = "SELECT * FROM CATEGORIA";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                Categoria categoria = new Categoria();
+                categoria.setNombre(cursor.getString(cursor.getColumnIndex("Nombre")));
+                categoria.setDescripcion(cursor.getString(cursor.getColumnIndex("Descripcion")));
+
+                // Adding contact to list
+                categorias.add(categoria);
+            } while (cursor.moveToNext());
+        }
+
+        db.close();
+        return categorias;
+    }
+    /*
+ qué pasa si se trata de hacer un get de un objeto que no existe? se cae?
+ Y no estoy seguro si esta, pero necesito roles por usuario
+ Los nombres en si, no los ID*/
 }
