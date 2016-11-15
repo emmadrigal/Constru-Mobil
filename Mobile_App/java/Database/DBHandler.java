@@ -1,79 +1,103 @@
+package Database;
+
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import models.*;
 
 public class DBHandler extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "costrumovil";
     private static final int DB_SCHEME_VERSION = 1;
 
-    private static final String SQL_CREATE_TABLE_USUARIO = "CREATE TABLE USUARIO" + "(" +
+    private static final String SQL_CREATE_TABLE_USUARIO = "CREATE TABLE USUARIO(" +
             "Cedula bigint NOT NULL PRIMARY KEY, " +
-            "Nombre varchar(max) NOT NULL, " +
-            "Apellido varchar(max) NOT NULL, " +
-            "Lugar_de_Residencia varchar(max), " +
-            "Fecha_de_Nacimiento date, " +
+            "Nombre TEXT NOT NULL, " +
+            "Apellido TEXT NOT NULL, " +
+            "Lugar_de_Residencia TEXT, " +
+            "Fecha_de_Nacimiento TEXT, " +
             "Telefono int" +
             ");";
 
-    private static final String SQL_CREATE_TABLE_PRODUCTO = "CREATE TABLE PRODUCTO" + "(" +
-            "Nombre_Producto varchar(30) NOT NULL PRIMARY KEY, " +
-            "Id_Sucursal bigint FOREIGN KEY REFERENCES SUCURSAL(Id_Sucursal), " +
-            "Cedula_Provedor bigint FOREIGN KEY REFERENCES USUARIO(Cedula), " +
-            "Nombre_Categoría varchar(50) FOREIGN KEY REFERENCES CATEGORIA(Nombre), " +
-            "Descripción varchar(max), " +
-            "Exento bit, " +
-            "Cantidad_Disponible int NOT NULL, " +
-            "Precio int);";
-
-    private static final String SQL_CREATE_TABLE_CATEGORIA = "CREATE TABLE CATEGORIA" + "(" +
-            "Nombre varchar (50) NOT NULL PRIMARY KEY, " +
-            "Descripcion varchar(max)" +
+    private static final String SQL_CREATE_TABLE_PRODUCTO = "CREATE TABLE PRODUCTO(" +
+            "Nombre_Producto VARCHAR(30) NOT NULL PRIMARY KEY, " +
+            "Id_Sucursal BIGINT NOT NULL," +
+            "Cedula_Provedor BIGINT NOT NULL, " +
+            "Nombre_Categoría VARCHAR(50) NOT NULL," +
+            "Descripción TEXT, " +
+            "Exento TINYINT, " +
+            "Cantidad_Disponible INT NOT NULL, " +
+            "Precio INT, " +
+            "FOREIGN KEY(Cedula_Provedor) REFERENCES USUARIO(Cedula), " +
+            "FOREIGN KEY(Id_Sucursal) REFERENCES SUCURSAL(Id_Sucursal), " +
+            "FOREIGN KEY(Nombre_Categoría) REFERENCES CATEGORIA(Nombre)" +
             ");";
 
-    private static final String SQL_CREATE_TABLE_PEDIDO = "CREATE TABLE PEDIDO" + "(" +
-            "Id_Pedido bigint NOT NULL AUTOINCREMENT PRIMARY KEY, " +
-            "Cedula_Cliente bigint FOREIGN KEY REFERENCES USUARIO(Cedula), " +
-            "Id_Sucursal bigint FOREIGN KEY REFERENCES SUCURSAL(Id_Sucursal), " +
-            "Telefono_Preferido int NOT NULL, " +
-            "Hora_de_Creación datetime NOT NULL" +
+    private static final String SQL_CREATE_TABLE_CATEGORIA = "CREATE TABLE CATEGORIA(" +
+            "Nombre VARCHAR(50) NOT NULL PRIMARY KEY, " +
+            "Descripcion TEXT" +
             ");";
 
-    private static final String SQL_CREATE_TABLE_SUCURSAL = "CREATE TABLE SUCURSAL" + "("
-            + "Id_Sucursal LONG PRIMARY KEY NOT NULL"
+    private static final String SQL_CREATE_TABLE_PEDIDO = "CREATE TABLE PEDIDO(" +
+            "Id_Pedido INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "Id_Sucursal BIGINT NOT NULL, " +
+            "Cedula_Cliente BIGINT NOT NULL, " +
+            "Telefono_Preferido INT NOT NULL, " +
+            "Hora_de_Creación TEXT NOT NULL, " +
+            "FOREIGN KEY(Cedula_Cliente) REFERENCES USUARIO(Cedula), " +
+            "FOREIGN KEY(Id_Sucursal) REFERENCES SUCURSAL(Id_Sucursal)" +
+            ");";
+
+    private static final String SQL_CREATE_TABLE_SUCURSAL = "CREATE TABLE SUCURSAL("
+            + "Id_Sucursal BIGINT PRIMARY KEY NOT NULL"
             + ");";
 
     private static final String SQL_CREATE_TABLE_ROL_USUARIO = "CREATE TABLE ROL_USUARIO( " +
-            "id_Rol_Usuario bigint AUTOINCREMENT PRIMARY KEY, " +
-            "usuario bigint FOREIGN KEY REFERENCES USUARIO(Cedula), " +
-            "rol bigint FOREIGN KEY REFERENCES ROL(Id_rol));";
+            "id_Rol_Usuario INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "usuario BIGINT NOT NULL, " +
+            "rol BIGINT NOT NULL, " +
+            "FOREIGN KEY(usuario) REFERENCES USUARIO(Cedula), " +
+            "FOREIGN KEY(rol) REFERENCES ROL(Id_rol)" +
+            ");";
 
     private static final String SQL_CREATE_TABLE_EMPLEADOSUCURSAL = "CREATE TABLE EmpleadoSucursal(" +
-            "Id_EmpleadoSucursal bigint NOT NULL AUTOINCREMENT PRIMARY KEY, " +
-            "id_empleado bigint FOREIGN KEY REFERENCES USUARIO(Cedula), " +
-            "id_sucursal bigint FOREIGN KEY REFERENCES SUCURSAL(Id_Sucursal));";
+            "Id_EmpleadoSucursal INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "id_empleado BIGINT NOT NULL, " +
+            "id_sucursal BIGINT NOT NULL, " +
+            "FOREIGN KEY(id_empleado) REFERENCES USUARIO(Cedula), " +
+            "FOREIGN KEY(id_sucursal) REFERENCES SUCURSAL(Id_Sucursal)" +
+            ");";
 
-    private static final String SQL_CREATE_TABLE_ROL = "CREATE TABLE ROL (" +
-            "Id_rol bigint PRIMARY KEY AUTOINCREMENT, " +
-            "nombre varchar(max));";
+    private static final String SQL_CREATE_TABLE_ROL = "CREATE TABLE ROL(" +
+            "Id_rol INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "nombre TEXT);";
 
-    private static final String SQL_CREATE_TABLE_CONTIENE = "CREATE TABLE CONTIENE (" +
-            "id_Contiene bigint PRIMARY KEY AUTOINCREMENT, " +
-            "Nombre_Producto varchar(30) FOREIGN KEY REFERENCES PRODUCTO(Nombre_Producto), " +
-            "Id_Pedido bigint FOREIGN KEY REFERENCES PEDIDO(Id_Pedido), " +
-            "Cantidad int);";
+    private static final String SQL_CREATE_TABLE_CONTIENE = "CREATE TABLE CONTIENE(" +
+            "id_Contiene INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "Nombre_Producto TEXT NOT NULL, " +
+            "Id_Pedido INTEGER NOT NULL, " +
+            "Cantidad INTEGER, " +
+            "FOREIGN KEY(Id_Pedido) REFERENCES PEDIDO(Id_Pedido), " +
+            "FOREIGN KEY(Nombre_Producto) REFERENCES PRODUCTO(Nombre_Producto)" +
+            ");";
 
-    private static DBHanlder DBHanlder;
+    private static DBHandler DBHanlder;
     private Context context;
 
-    private DBHanlder(Context context) {
+    private DBHandler(Context context) {
         super(context, DB_NAME, null, DB_SCHEME_VERSION);
         this.context = context;
     }
 
-    public static DBHanlder getSingletonInstance(Context context) {
+    public static DBHandler getSingletonInstance(Context context) {
         if (DBHanlder == null){
-            DBHanlder = new DBHanlder(context);
+            DBHanlder = new DBHandler(context);
         }
         else{
             System.out.println("No se puede crear el objeto porque ya existe un objeto de la clase DBHanlder");
@@ -85,10 +109,10 @@ public class DBHandler extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(SQL_CREATE_TABLE_USUARIO);
-        db.execSQL(SQL_CREATE_TABLE_PRODUCTO);
         db.execSQL(SQL_CREATE_TABLE_CATEGORIA);
-        db.execSQL(SQL_CREATE_TABLE_PEDIDO);
         db.execSQL(SQL_CREATE_TABLE_SUCURSAL);
+        db.execSQL(SQL_CREATE_TABLE_PRODUCTO);
+        db.execSQL(SQL_CREATE_TABLE_PEDIDO);
         db.execSQL(SQL_CREATE_TABLE_ROL_USUARIO);
         db.execSQL(SQL_CREATE_TABLE_ROL);
         db.execSQL(SQL_CREATE_TABLE_CONTIENE);
@@ -216,7 +240,7 @@ public class DBHandler extends SQLiteOpenHelper {
         updateFromDB("CATEGORIA", values, "Nombre="+categoria.Nombre);
     }
 
-    private Categoria getCategoria(String nombre){
+    public Categoria getCategoria(String nombre){
         Cursor cursor = getRowFromDB("CATEGORIA", "Nombre", nombre);
 
         Categoria categoria = new Categoria();
