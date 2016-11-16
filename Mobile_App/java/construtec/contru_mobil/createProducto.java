@@ -1,5 +1,6 @@
 package com.example.emmanuel.construmobil;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -9,11 +10,14 @@ import Database.DBHandler;
 import models.Producto;
 
 public class createProducto extends AppCompatActivity {
+    String userID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_producto);
+
+        userID = getIntent().getStringExtra("userID");
 
         //TODO set category as a spinner? or give options
         //TODO give only si & no options on exento
@@ -39,5 +43,11 @@ public class createProducto extends AppCompatActivity {
 
         DBHandler db = DBHandler.getSingletonInstance(this);
         db.addProducto(producto);
+
+        Intent intent = new Intent(this, productDetails.class);
+        intent.putExtra("userID", userID);
+        intent.putExtra("id", producto.Nombre_Producto);
+        finish();
+        startActivity(intent);
     }
 }

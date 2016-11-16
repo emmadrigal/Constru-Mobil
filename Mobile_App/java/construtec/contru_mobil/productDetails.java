@@ -244,11 +244,13 @@ public class productDetails extends AppCompatActivity {
         } else {
             deleteBTN.setVisibility(View.GONE);
         }
-        //TODO set popup edit windows
 
     }
 
     public void delete(View view){
+        DBHandler db = DBHandler.getSingletonInstance(null);//The DBHandler has already been created
 
+        db.deleteProducto(producto.Nombre_Producto);
+        finish();
     }
 }

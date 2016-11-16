@@ -20,6 +20,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -428,53 +430,54 @@ public class MainScreen extends AppCompatActivity {
             Button create = (Button) rootView.findViewById(R.id.create);
             create.setText("Crear nuevo pedido");
 
-            create.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    View.OnClickListener createActivity = new View.OnClickListener() {
+            create.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View view) {
+                    final Dialog d = new Dialog(getContext());
+                    d.setContentView(R.layout.text_popup);
+                    Button setValue = (Button) d.findViewById(R.id.set);
+                    setValue.setText("Crear");
+
+                    Button cancelAction = (Button) d.findViewById(R.id.cancel);
+
+                    final EditText np = (EditText) d.findViewById(R.id.newValue);
+                    np.setHint("Teléfono Preferido");
+                    np.setInputType(TYPE_CLASS_NUMBER);
+
+                    setValue.setOnClickListener(new View.OnClickListener()
+                    {
                         @Override
                         public void onClick(View v) {
-                            final Dialog d = new Dialog(getContext());
-                            d.setContentView(R.layout.text_popup);
-                            Button setValue = (Button) d.findViewById(R.id.set);
-                            setValue.setText("Crear");
+                            Pedido pedido = new Pedido();
 
-                            Button cancelAction = (Button) d.findViewById(R.id.cancel);
+                            pedido.Cedula_Cliente = usuario.Cedula;
+                            pedido.Id_Sucursal = 0;
+                            pedido.Telefono_Preferido = Integer.parseInt(np.getText().toString());
 
-                            final EditText np = (EditText) d.findViewById(R.id.newValue);
-                            np.setHint("Teléfono Preferido");
-                            np.setInputType(TYPE_CLASS_NUMBER);
+                            Calendar cal = Calendar.getInstance();
 
-                            setValue.setOnClickListener(new View.OnClickListener()
-                            {
-                                @Override
-                                public void onClick(View v) {
-                                    Pedido pedido = new Pedido();
+                            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
-                                    pedido.Cedula_Cliente = usuario.Cedula;
-                                    pedido.Id_Sucursal = 0;
-                                    pedido.Telefono_Preferido = Integer.parseInt(np.getText().toString());
 
-                                    Calendar cal = Calendar.getInstance();
-                                    pedido.Hora_de_Creación = cal.getTime().toString();
+                            //TODO give correct format to this date
+                            pedido.Hora_de_Creación = dateFormat.format(cal.getTime());
 
-                                    DBHandler db = DBHandler.getSingletonInstance(getContext());
-                                    db.addPedido(pedido);
+                            DBHandler db = DBHandler.getSingletonInstance(getContext());
+                            db.addPedido(pedido);
 
-                                    updateListaPedidos();
+                            updateListaPedidos();
 
-                                    d.dismiss();
-                                }
-                            });
-                            cancelAction.setOnClickListener(new View.OnClickListener()
-                            {
-                                @Override
-                                public void onClick(View v) {
-                                    d.dismiss();
-                                }
-                            });
-                            d.show();
+                            d.dismiss();
                         }
-                    };
+                    });
+                    cancelAction.setOnClickListener(new View.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(View v) {
+                            d.dismiss();
+                        }
+                    });
+                    d.show();
                 }
             });
 
@@ -542,9 +545,12 @@ public class MainScreen extends AppCompatActivity {
             Button create = (Button) rootView.findViewById(R.id.create);
             create.setText("Crear nueva Categoria");
 
-            create.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    //TODO call create category activity
+            create.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(view.getContext(), crearCategory.class);
+                    intent.putExtra("userID", usuario.Cedula);
+                    startActivity(intent);
                 }
             });
 
@@ -615,9 +621,12 @@ public class MainScreen extends AppCompatActivity {
             Button create = (Button) rootView.findViewById(R.id.create);
             create.setText("Crear nuevo Producto");
 
-            create.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    //TODO call create producto activity
+            create.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(view.getContext(), createProducto.class);
+                    intent.putExtra("userID", usuario.Cedula);
+                    startActivity(intent);
                 }
             });
 
@@ -706,7 +715,10 @@ public class MainScreen extends AppCompatActivity {
      * @param v view calling this function
      */
     public void delete(View v){
-        //TODO avoid delete if user is vendedor
+        DBHandler db = DBHandler.getSingletonInstance(null);//The DBHandler has already been created
+
+        db.deleteUsuario(usuario.Cedula);
+        finish();
     }
 
     /**

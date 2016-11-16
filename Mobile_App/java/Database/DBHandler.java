@@ -79,7 +79,7 @@ public class DBHandler extends SQLiteOpenHelper {
             "nombre TEXT);";
 
     private static final String SQL_CREATE_TABLE_CONTIENE = "CREATE TABLE CONTIENE(" +
-            "id_Contiene INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "id_Contiene INTEGER PRIMARY KEY AUTOIAUTOINCREMENT, " +
             "Nombre_Producto TEXT NOT NULL, " +
             "Id_Pedido INTEGER NOT NULL, " +
             "Cantidad INTEGER, " +
@@ -252,7 +252,6 @@ public class DBHandler extends SQLiteOpenHelper {
     public void addPedido(Pedido pedido){
         ContentValues values = new ContentValues();
 
-        values.put("Id_Pedido", pedido.Id_Pedido);
         values.put("Cedula_Cliente", pedido.Cedula_Cliente);
         values.put("Id_Sucursal", pedido.Id_Sucursal);
         values.put("Telefono_Preferido", pedido.Telefono_Preferido);

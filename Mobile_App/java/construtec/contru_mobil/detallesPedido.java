@@ -159,7 +159,9 @@ public class detallesPedido extends AppCompatActivity {
                     {
                         @Override
                         public void onClick(View v) {
-                            //TODO make call the the DBhandler
+                            DBHandler db = DBHandler.getSingletonInstance(null);//The DBHandler has already been created
+
+                            db.updatePedido(pedido);
                             phoneNumber.setText(np.getText());
                             d.dismiss();
                         }
@@ -234,6 +236,13 @@ public class detallesPedido extends AppCompatActivity {
 
             return rootView;
         }
+    }
+
+    public void delete(View view){
+        DBHandler db = DBHandler.getSingletonInstance(null);//The DBHandler has already been created
+
+        db.deletePedido(pedido.Id_Pedido);
+        finish();
     }
 
     void updateProductos(){

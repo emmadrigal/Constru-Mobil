@@ -109,7 +109,6 @@ public class RegisterUser extends AppCompatActivity {
             public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
                 selectedmonth = selectedmonth + 1;
                 String newDate = Integer.toString(selectedyear) +"-" +   Integer.toString(selectedmonth) +"-" + Integer.toString(selectedday);
-                //TODO make call to DB Handler
                 birth.setText(newDate);
             }
 
@@ -140,6 +139,7 @@ public class RegisterUser extends AppCompatActivity {
         if(origin.equals("login")){
             Intent intent = new Intent(this, MainScreen.class);
             intent.putExtra("id", usuario.Cedula);
+            finish();
             startActivity(intent);
         } else{
             finish();
