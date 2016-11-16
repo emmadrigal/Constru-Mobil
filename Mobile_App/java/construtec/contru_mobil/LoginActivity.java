@@ -24,6 +24,10 @@ public class LoginActivity extends AppCompatActivity {
         mUserName = (EditText) findViewById(R.id.userName);
 
         mUserId = (EditText) findViewById(R.id.userId);
+
+        DBHandler db = DBHandler.getSingletonInstance(this);
+
+        db.getRolesUsuario(0);
     }
 
     /**
@@ -62,12 +66,13 @@ public class LoginActivity extends AppCompatActivity {
      * @param userId of the user that wishes to login
      * @return boolean indicating if the user exists on the Database
      */
-    private boolean userExists(String name, int userId){
+    private boolean userExists(String name, int userId) {
         DBHandler db = DBHandler.getSingletonInstance(this);
 
-        Usuario usuario=  db.getUsuario(userId);
+        Usuario usuario = db.getUsuario(userId);
 
-        return usuario.Nombre.equals(name);
+        return usuario != null && usuario.Nombre.equals(name);
+
 
     }
 }

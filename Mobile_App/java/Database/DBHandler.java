@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +80,7 @@ public class DBHandler extends SQLiteOpenHelper {
             "nombre TEXT);";
 
     private static final String SQL_CREATE_TABLE_CONTIENE = "CREATE TABLE CONTIENE(" +
-            "id_Contiene INTEGER PRIMARY KEY AUTOIAUTOINCREMENT, " +
+            "id_Contiene INTEGER PRIMARY KEY AUTOINCREMENT, " +
             "Nombre_Producto TEXT NOT NULL, " +
             "Id_Pedido INTEGER NOT NULL, " +
             "Cantidad INTEGER, " +
@@ -117,6 +118,20 @@ public class DBHandler extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_TABLE_ROL);
         db.execSQL(SQL_CREATE_TABLE_CONTIENE);
         db.execSQL(SQL_CREATE_TABLE_EMPLEADOSUCURSAL);
+
+        ContentValues values = new ContentValues();
+        values.put("nombre", "Proveedor");
+        db.insert("ROL", null, values);
+
+        values = new ContentValues();
+        values.put("nombre", "Cliente");
+        db.insert("ROL", null, values);
+
+
+        values = new ContentValues();
+        values.put("nombre", "Vendedor");
+        db.insert("ROL", null, values);
+
     }
 
     @Override
@@ -138,6 +153,30 @@ public class DBHandler extends SQLiteOpenHelper {
         insertInDB("USUARIO", values);
     }
 
+    public void addRol(long userID, String rol) {
+        Log.i("rol-usuario", Long.toString(userID) + rol);
+
+        ContentValues values = new ContentValues();
+
+        values.put("usuario", userID);
+        switch (rol){
+            case "Cliente" :{
+                values.put("rol", 2);
+                break;
+            }
+            case "Proveedor":{
+                values.put("rol", 1);
+                break;
+            }
+        }
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.insert("ROL_USUARIO", null, values);
+        db.close();
+
+
+    }
+
     public void deleteUsuario(long id){
         deleteFromDB("USUARIO", "Cedula", String.valueOf(id));
     }
@@ -157,15 +196,20 @@ public class DBHandler extends SQLiteOpenHelper {
     public Usuario getUsuario(long id){
         Cursor cursor = getRowFromDB("USUARIO", "Cedula", String.valueOf(id));
 
-        Usuario usuario = new Usuario();
-        usuario.setCedula(id);
-        usuario.setApellido(cursor.getString(cursor.getColumnIndex("Apellido")));
-        usuario.setNombre(cursor.getString(cursor.getColumnIndex("Nombre")));
-        usuario.setLugar_de_Residencia(cursor.getString(cursor.getColumnIndex("Lugar_de_Residencia")));
-        usuario.setFecha_de_Nacimiento(cursor.getString(cursor.getColumnIndex("Fecha_de_Nacimiento")));
-        usuario.setTelefono(cursor.getInt(cursor.getColumnIndex("Telefono")));
+        if(cursor.getCount() > 0){
+            Usuario usuario = new Usuario();
+            usuario.setCedula(id);
+            usuario.setApellido(cursor.getString(cursor.getColumnIndex("Apellido")));
+            usuario.setNombre(cursor.getString(cursor.getColumnIndex("Nombre")));
+            usuario.setLugar_de_Residencia(cursor.getString(cursor.getColumnIndex("Lugar_de_Residencia")));
+            usuario.setFecha_de_Nacimiento(cursor.getString(cursor.getColumnIndex("Fecha_de_Nacimiento")));
+            usuario.setTelefono(cursor.getInt(cursor.getColumnIndex("Telefono")));
 
-        return usuario;
+            return usuario;
+        }else{
+            return null;
+        }
+
     }
 
     //Métodos para la tabla producto
@@ -174,44 +218,43 @@ public class DBHandler extends SQLiteOpenHelper {
 
         values.put("Nombre_Producto", prod.Nombre_Producto);
         values.put("Id_Sucursal", prod.Id_Sucursal);
-        values.put("Cedula_Proveedor", prod.Cedula_Proveedor);
-        values.put("Nombre_Categoria", prod.Nombre_Categoria);
-        values.put("descripcion", prod.descripcion);
-        values.put("exento", prod.exento);
-        values.put("cantidad", prod.cantidad);
-        values.put("precio", prod.precio);
+        values.put("Cedula_Provedor", prod.Cedula_Proveedor);
+        values.put("Nombre_Categoría", prod.Nombre_Categoria);
+        values.put("Descripción", prod.descripcion);
+        values.put("Exento", prod.exento);
+        values.put("Cantidad_Disponible", prod.cantidad);
+        values.put("Precio", prod.precio);
 
         insertInDB("PRODUCTO", values);
     }
 
     public void deleteProducto(String nombre){
-        deleteFromDB("PRODUCTO", "Nombre_Producto", nombre);
+        deleteFromDB("PRODUCTO", "Nombre_Producto", "'"+ nombre+ "'");
     }
 
     public void updateProducto(Producto prod){
         ContentValues values = new ContentValues();
 
-        values.put("Nombre_Categoria", prod.Nombre_Categoria);
-        values.put("descripcion", prod.descripcion);
-        values.put("exento", prod.exento);
-        values.put("cantidad", prod.cantidad);
-        values.put("precio", prod.precio);
+        values.put("Descripción", prod.descripcion);
+        values.put("Exento", prod.exento);
+        values.put("Cantidad_Disponible", prod.cantidad);
+        values.put("Precio", prod.precio);
 
-        updateFromDB("PRODUCTO", values, "Nombre_Producto="+ prod.Nombre_Producto);
+        updateFromDB("PRODUCTO", values, "Nombre_Producto = '"+ prod.Nombre_Producto+ "'");
     }
 
     public Producto getProducto(String nombre){
-        Cursor cursor = getRowFromDB("PRODUCTO", "Nombre_Producto", nombre);
+        Cursor cursor = getRowFromDB("PRODUCTO", "Nombre_Producto", "'"+ nombre+ "'");
 
         Producto producto = new Producto();
-        producto.setNombre_Producto(nombre);
+        producto.setNombre_Producto(cursor.getString(cursor.getColumnIndex("Nombre_Producto")));
         producto.setId_Sucursal(cursor.getLong(cursor.getColumnIndex("Id_Sucursal")));
-        producto.setCedula_Proveedor(cursor.getLong(cursor.getColumnIndex("Cedula_Proveedor")));
-        producto.setNombre_Categoria(cursor.getString(cursor.getColumnIndex("Nombre_Categoria")));
-        producto.setDescripcion(cursor.getString(cursor.getColumnIndex("descripcion")));
-        producto.setExento(cursor.getInt(cursor.getColumnIndex("exento")));
-        producto.setCantidad(cursor.getInt(cursor.getColumnIndex("cantidad")));
-        producto.setPrecio(cursor.getInt(cursor.getColumnIndex("precio")));
+        producto.setCedula_Proveedor(cursor.getLong(cursor.getColumnIndex("Cedula_Provedor")));
+        producto.setNombre_Categoria(cursor.getString(cursor.getColumnIndex("Nombre_Categoría")));
+        producto.setDescripcion(cursor.getString(cursor.getColumnIndex("Descripción")));
+        producto.setExento(cursor.getInt(cursor.getColumnIndex("Exento")));
+        producto.setCantidad(cursor.getInt(cursor.getColumnIndex("Cantidad_Disponible")));
+        producto.setPrecio(cursor.getInt(cursor.getColumnIndex("Precio")));
 
         return producto;
     }
@@ -227,7 +270,7 @@ public class DBHandler extends SQLiteOpenHelper {
     }
 
     public void deleteCategoria(String nombre){
-        deleteFromDB("CATEGORIA", "Nombre", nombre);
+        deleteFromDB("CATEGORIA", "Nombre", "'" + nombre + "'");
     }
 
     public void updateCategoria(Categoria categoria){
@@ -235,11 +278,11 @@ public class DBHandler extends SQLiteOpenHelper {
 
         values.put("Descripcion", categoria.Descripcion);
 
-        updateFromDB("CATEGORIA", values, "Nombre="+categoria.Nombre);
+        updateFromDB("CATEGORIA", values, "Nombre= '"+categoria.Nombre + "'");
     }
 
     public Categoria getCategoria(String nombre){
-        Cursor cursor = getRowFromDB("CATEGORIA", "Nombre", nombre);
+        Cursor cursor = getRowFromDB("CATEGORIA", "Nombre", "'" + nombre + "'");
 
         Categoria categoria = new Categoria();
         categoria.setNombre(nombre);
@@ -258,6 +301,16 @@ public class DBHandler extends SQLiteOpenHelper {
         values.put("Hora_de_Creación", pedido.Hora_de_Creación);
 
         insertInDB("PEDIDO", values);
+    }
+
+    public void addContiene(Contiene contiene){
+        ContentValues values = new ContentValues();
+
+        values.put("Cantidad", contiene.Cantidad);
+        values.put("Nombre_Producto", contiene.Nombre_Producto);
+        values.put("Id_Pedido", contiene.Id_Pedido);
+
+        insertInDB("CONTIENE", values);
     }
 
     public void deletePedido(long id){
@@ -440,12 +493,12 @@ public class DBHandler extends SQLiteOpenHelper {
                 Producto producto = new Producto();
                 producto.setNombre_Producto(cursor.getString(cursor.getColumnIndex("Nombre_Producto")));
                 producto.setId_Sucursal(cursor.getLong(cursor.getColumnIndex("Id_Sucursal")));
-                producto.setCedula_Proveedor(cursor.getLong(cursor.getColumnIndex("Cedula_Proveedor")));
-                producto.setNombre_Categoria(cursor.getString(cursor.getColumnIndex("Nombre_Categoria")));
-                producto.setDescripcion(cursor.getString(cursor.getColumnIndex("descripcion")));
-                producto.setExento(cursor.getInt(cursor.getColumnIndex("exento")));
-                producto.setCantidad(cursor.getInt(cursor.getColumnIndex("cantidad")));
-                producto.setPrecio(cursor.getInt(cursor.getColumnIndex("precio")));
+                producto.setCedula_Proveedor(cursor.getLong(cursor.getColumnIndex("Cedula_Provedor")));
+                producto.setNombre_Categoria(cursor.getString(cursor.getColumnIndex("Nombre_Categoría")));
+                producto.setDescripcion(cursor.getString(cursor.getColumnIndex("Descripción")));
+                producto.setExento(cursor.getInt(cursor.getColumnIndex("Exento")));
+                producto.setCantidad(cursor.getInt(cursor.getColumnIndex("Cantidad_Disponible")));
+                producto.setPrecio(cursor.getInt(cursor.getColumnIndex("Precio")));
 
                 // Adding contact to list
                 productos.add(producto);
@@ -477,6 +530,33 @@ public class DBHandler extends SQLiteOpenHelper {
 
         db.close();
         return categorias;
+    }
+
+    public List<String> getRolesUsuario(long userID){
+        List<String> roles = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        //String selectQuery = "SELECT R.nombre as name FROM ((ROL as R JOIN ROL_USUARIO as RU ON R.Id_rol = RU.rol) " +
+        //        "JOIN USUARIO as U ON U.Cedula = RU.usuario) WHERE U.Cedula =" + Long.toString(userID) + ";";
+
+        String selectQuery = "SELECT R.nombre as nombre, U.Nombre as usuario FROM ROL R " +
+                "JOIN ROL_USUARIO RU ON R.Id_rol = RU.rol " +
+                "JOIN USUARIO U ON U.Cedula = RU.usuario WHERE U.Cedula = " + Long.toString(userID);
+
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                String rol = cursor.getString(cursor.getColumnIndex("nombre"));
+
+                // Adding contact to list
+                roles.add(rol);
+            } while (cursor.moveToNext());
+        }
+
+        db.close();
+        return roles;
     }
     /*
  qué pasa si se trata de hacer un get de un objeto que no existe? se cae?

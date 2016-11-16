@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_height="match_parent"
+android:layout_width="match_parent"
+android:fitsSystemWindows="true"
+android:orientation="vertical"
+tools:context="com.example.emmanuel.construmobil.addProductToPedido">
+
+<android.support.v7.widget.Toolbar
+    android:id="@+id/toolbar_top"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:minHeight="?attr/actionBarSize"
+    app:theme="@style/AppTheme" >
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="Select new Material to Add to Stage"
+        android:textSize="20sp"
+        android:textColor="@color/colorPrimary"
+        android:layout_gravity="center"
+        android:id="@+id/toolbar_title" />
+
+
+</android.support.v7.widget.Toolbar>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Filter"
+        android:textSize="25sp"
+        android:textColor="@color/colorPrimaryDark"
+        android:layout_gravity="center"
+        android:id="@+id/filter" />
+    <ListView
+        android:id="@+id/List"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </ListView>
+
+
+</LinearLayout>

@@ -28,7 +28,12 @@ public class crearCategory extends AppCompatActivity {
         DBHandler db = DBHandler.getSingletonInstance(null);
 
         Categoria categoria = new Categoria();
-        categoria.Nombre = nombre.getText().toString();
+        if(!nombre.getText().toString().isEmpty())
+            categoria.Nombre = nombre.getText().toString();
+        else{
+            nombre.setError("El nombre es requerido");
+            return;
+        }
         categoria.Descripcion = description.getText().toString();
 
         db.addCategoria(categoria);

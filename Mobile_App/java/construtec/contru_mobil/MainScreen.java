@@ -37,6 +37,7 @@ import static android.text.InputType.TYPE_CLASS_NUMBER;
 
 public class MainScreen extends AppCompatActivity {
 
+    private static List<String> roles;
     private static models.Usuario usuario;
     private static final List<String> pedidosList = new ArrayList<>();
     private static final List<String> productosList = new ArrayList<>();
@@ -73,10 +74,13 @@ public class MainScreen extends AppCompatActivity {
                 categoriasList);
 
         long userId = getIntent().getLongExtra("id", 0);
-        Log.i("userID_recibido", Long.toString(userId));
 
         DBHandler db = DBHandler.getSingletonInstance(this);
 
+        roles = db.getRolesUsuario(userId);
+        for(int i = 0; i < roles.size(); i++){
+            Log.i("roles!!!", roles.get(i));
+        }
         usuario =  db.getUsuario(userId);
     }
 
@@ -365,8 +369,12 @@ public class MainScreen extends AppCompatActivity {
             address.setText(usuario.Lugar_de_Residencia);
             phone.setText(Long.toString(usuario.Telefono));
 
-
-
+            Button delete = (Button) rootView.findViewById(R.id.delete);
+            if(hasRol("Vendedor")){
+                delete.setVisibility(View.GONE);
+            } else {
+                delete.setVisibility(View.VISIBLE);
+            }
 
             return rootView;
         }
@@ -616,19 +624,23 @@ public class MainScreen extends AppCompatActivity {
                 }
             });
 
-            //TODO hide button if user isn't a supplier
-
             Button create = (Button) rootView.findViewById(R.id.create);
-            create.setText("Crear nuevo Producto");
 
-            create.setOnClickListener(new View.OnClickListener(){
-                @Override
-                public void onClick(View view) {
-                    Intent intent = new Intent(view.getContext(), createProducto.class);
-                    intent.putExtra("userID", usuario.Cedula);
-                    startActivity(intent);
-                }
-            });
+            if(hasRol("Proveedor")){
+                create.setVisibility(View.VISIBLE);
+                create.setText("Crear nuevo Producto");
+
+                create.setOnClickListener(new View.OnClickListener(){
+                    @Override
+                    public void onClick(View view) {
+                        Intent intent = new Intent(view.getContext(), createProducto.class);
+                        intent.putExtra("userID", Long.toString(usuario.Cedula));
+                        startActivity(intent);
+                    }
+                });
+            } else {
+                create.setVisibility(View.GONE);
+            }
 
 
             return rootView;
@@ -754,12 +766,14 @@ public class MainScreen extends AppCompatActivity {
             producto = productos.get(i);
             productosList.add(producto.Nombre_Producto);
         }
+        productosAdapter.notifyDataSetChanged();
     }
 
     /**
      * Updates the categories list from the data in the database and triggers a refresh on the DB
      */
     public static void updateListaCategorias(){
+        categoriasList.clear();
         DBHandler db = DBHandler.getSingletonInstance(null);//The DBHandler has already been created
         List<models.Categoria> categorias = db.getAllCategorias();
 
@@ -768,5 +782,15 @@ public class MainScreen extends AppCompatActivity {
             categoria = categorias.get(i);
             categoriasList.add(categoria.Nombre);
         }
+        categoriasAdapter.notifyDataSetChanged();
+    }
+
+    public static boolean hasRol(String rol){
+        for (int i = 0; i < roles.size(); i++){
+            if(rol.equals(roles.get(i))){
+                return true;
+            }
+        }
+        return false;
     }
 }

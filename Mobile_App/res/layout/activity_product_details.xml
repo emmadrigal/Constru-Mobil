@@ -145,14 +145,11 @@
             android:drawablePadding="5dp"
             android:layout_weight="1"
             android:text="Exento: " />
-        <TextView
+        <CheckBox
             android:id="@+id/exento"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="15sp"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
-            android:drawablePadding="5dp" />
+            android:onClick="onCheckboxClicked"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
     <LinearLayout

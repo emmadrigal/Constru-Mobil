@@ -124,16 +124,30 @@ public class RegisterUser extends AppCompatActivity {
     public void LogIn(View view){
         //TODO check that name and phone aren't empty
         Usuario usuario=  new Usuario();
-        usuario.Cedula   = Integer.parseInt(id.getText().toString());
+        if(!id.getText().toString().isEmpty())
+            usuario.Cedula = Integer.parseInt(id.getText().toString());
+        else {
+            id.setError("Cedula es requerida");
+            return;
+        }
         usuario.Nombre   = name.getText().toString();
         usuario.Apellido = lastName.getText().toString();
         usuario.Lugar_de_Residencia = residence.getText().toString();
         usuario.Fecha_de_Nacimiento= birth.getText().toString();
-        usuario.Telefono = Integer.parseInt(phone.getText().toString());
+
+        if(!phone.getText().toString().isEmpty())
+            usuario.Telefono = Integer.parseInt(phone.getText().toString());
+        else
+            usuario.Telefono = 0;
 
         DBHandler db = DBHandler.getSingletonInstance(this);
         db.addUsuario(usuario);
-        //TODO asociate user to role
+        if(spinner.getSelectedItem().toString().equals("Cliente")){
+            db.addRol(usuario.Cedula, "Cliente");
+        }
+        else{
+            db.addRol(usuario.Cedula, "Proveedor");
+        }
         //TODO check if user id already exists
 
         if(origin.equals("login")){
