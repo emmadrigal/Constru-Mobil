@@ -191,8 +191,6 @@ public class DBHandler extends SQLiteOpenHelper {
     public void updateProducto(Producto prod){
         ContentValues values = new ContentValues();
 
-        values.put("Id_Sucursal", prod.Id_Sucursal);
-        values.put("Cedula_Proveedor", prod.Cedula_Proveedor);
         values.put("Nombre_Categoria", prod.Nombre_Categoria);
         values.put("descripcion", prod.descripcion);
         values.put("exento", prod.exento);
@@ -270,10 +268,7 @@ public class DBHandler extends SQLiteOpenHelper {
     public void updatePedido(Pedido pedido){
         ContentValues values = new ContentValues();
 
-        values.put("Cedula_Cliente", pedido.Cedula_Cliente);
-        values.put("Id_Sucursal", pedido.Id_Sucursal);
         values.put("Telefono_Preferido", pedido.Telefono_Preferido);
-        values.put("Hora_de_Creación", pedido.Hora_de_Creación);
 
         updateFromDB("PEDIDO", values, "Id_Pedido="+ pedido.Id_Pedido);
     }

@@ -6,7 +6,22 @@
     <ListView
         android:id="@+id/List"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
     </ListView>
+
+    <LinearLayout
+        android:id="@+id/LinearLayout02"
+        android:layout_height="0dp"
+        android:layout_width="fill_parent"
+        android:layout_weight="0.55"
+        android:gravity="bottom"
+        android:layout_alignParentBottom="true">
+        <Button
+            android:id="@+id/create"
+            android:text="Hola"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
 
 </LinearLayout>

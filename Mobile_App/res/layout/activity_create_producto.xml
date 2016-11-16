@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_product_details"
+    android:orientation="vertical"
+    android:id="@+id/activity_create_producto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.emmanuel.construmobil.productDetails">
+    tools:context="com.example.emmanuel.construmobil.createProducto">
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -20,16 +20,18 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="15sp"
+            android:textSize="20sp"
             android:gravity="center_vertical"
             android:drawablePadding="5dp"
             android:layout_weight="1"
             android:text="Nombre: " />
-        <TextView
-            android:id="@+id/productName"
+        <EditText
+            android:inputType="text"
+            android:id="@+id/userName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="15sp"
+            android:textSize="12sp"
+            android:maxLines="1"
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:drawablePadding="5dp" />
@@ -44,20 +46,23 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="15sp"
+            android:textSize="20sp"
             android:gravity="center_vertical"
             android:drawablePadding="5dp"
             android:layout_weight="1"
             android:text="Descripción: " />
-        <TextView
+        <EditText
+            android:inputType="text"
             android:id="@+id/description"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="15sp"
+            android:textSize="12sp"
+            android:maxLines="1"
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:drawablePadding="5dp" />
     </LinearLayout>
+
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -68,64 +73,18 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="15sp"
-            android:gravity="center_vertical"
-            android:drawablePadding="5dp"
-            android:layout_weight="1"
-            android:text="Sucursal:" />
-        <TextView
-            android:id="@+id/sucursal"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="15sp"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
-            android:drawablePadding="5dp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_margin="20dp"
-        android:gravity="center">
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="15sp"
-            android:gravity="center_vertical"
-            android:drawablePadding="5dp"
-            android:layout_weight="1"
-            android:text="Proveedor: " />
-        <TextView
-            android:id="@+id/supplier"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="15sp"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
-            android:drawablePadding="5dp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_margin="20dp"
-        android:gravity="center">
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="15sp"
+            android:textSize="20sp"
             android:gravity="center_vertical"
             android:drawablePadding="5dp"
             android:layout_weight="1"
             android:text="Categoría: " />
-        <TextView
+        <EditText
+            android:inputType="text"
             android:id="@+id/category"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="15sp"
+            android:textSize="12sp"
+            android:maxLines="1"
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:drawablePadding="5dp" />
@@ -140,16 +99,18 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="15sp"
+            android:textSize="20sp"
             android:gravity="center_vertical"
             android:drawablePadding="5dp"
             android:layout_weight="1"
             android:text="Exento: " />
-        <TextView
+        <EditText
+            android:inputType="numberDecimal"
             android:id="@+id/exento"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="15sp"
+            android:textSize="12sp"
+            android:maxLines="1"
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:drawablePadding="5dp" />
@@ -164,16 +125,18 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="15sp"
+            android:textSize="20sp"
             android:gravity="center_vertical"
             android:drawablePadding="5dp"
             android:layout_weight="1"
             android:text="Cantidad Disponible: " />
-        <TextView
+        <EditText
+            android:inputType="number"
             android:id="@+id/quantity"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="15sp"
+            android:textSize="12sp"
+            android:maxLines="1"
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:drawablePadding="5dp" />
@@ -188,33 +151,28 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="15sp"
+            android:textSize="20sp"
             android:gravity="center_vertical"
             android:drawablePadding="5dp"
             android:layout_weight="1"
             android:text="Precio: " />
-        <TextView
+        <EditText
+            android:inputType="number"
             android:id="@+id/price"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="15sp"
+            android:textSize="12sp"
+            android:maxLines="1"
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:drawablePadding="5dp" />
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="0"
-        android:orientation="vertical"
-        android:gravity="bottom">
-        <Button
-            android:id="@+id/delete"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="delete"
-            android:text="Retirar Producto"/>
-    </LinearLayout>
+    <Button
+        android:id="@+id/create"
+        android:onClick="Create"
+        android:text="Create"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

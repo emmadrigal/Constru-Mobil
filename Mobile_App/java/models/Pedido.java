@@ -1,4 +1,4 @@
-package prueba.appprueba.models;
+package models;
 
 import java.util.LinkedList;
 import java.util.List;

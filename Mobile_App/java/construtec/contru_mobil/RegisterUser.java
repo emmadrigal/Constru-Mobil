@@ -1,26 +1,51 @@
 package com.example.emmanuel.construmobil;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
+
+import java.util.Calendar;
+import java.util.Date;
+
+import Database.DBHandler;
+import models.Usuario;
 
 public class RegisterUser extends AppCompatActivity {
+    private EditText id;
+    private EditText name;
+    private EditText lastName;
+    private TextView birth;
+    private EditText residence;
     private EditText phone;
     private Spinner spinner;
     private String origin;
+
+    static int dia;
+    static int mes;
+    static int año;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register_user);
 
-        spinner = (Spinner)  findViewById(R.id.Role);
+
+        id        = (EditText) findViewById(R.id.userId);
+        name      = (EditText) findViewById(R.id.userName);
+        lastName  = (EditText) findViewById(R.id.userLastName);
+        birth     = (TextView) findViewById(R.id.birth);
+        residence = (EditText) findViewById(R.id.residence);
         phone    = (EditText) findViewById(R.id.phoneNumber);
+
+        spinner = (Spinner)  findViewById(R.id.Role);
 
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
@@ -68,7 +93,29 @@ public class RegisterUser extends AppCompatActivity {
 
 
 
-        //TODO set birth as a date dialog
+        Date fecha = new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(fecha);
+
+        dia = cal.get(Calendar.DAY_OF_MONTH);
+        mes = cal.get(Calendar.MONTH);
+        año = cal.get(Calendar.YEAR);
+    }
+
+
+    public void dateChooser(View view){
+        DatePickerDialog mDatePicker = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+
+            public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
+                selectedmonth = selectedmonth + 1;
+                String newDate = Integer.toString(selectedyear) +"-" +   Integer.toString(selectedmonth) +"-" + Integer.toString(selectedday);
+                //TODO make call to DB Handler
+                birth.setText(newDate);
+            }
+
+        },
+                año, mes, dia);
+        mDatePicker.show();
     }
 
     /**
@@ -76,13 +123,24 @@ public class RegisterUser extends AppCompatActivity {
      * @param view that calls this method
      */
     public void LogIn(View view){
-        //TODO send data to database for storage
+        //TODO check that name and phone aren't empty
+        Usuario usuario=  new Usuario();
+        usuario.Cedula   = Integer.parseInt(id.getText().toString());
+        usuario.Nombre   = name.getText().toString();
+        usuario.Apellido = lastName.getText().toString();
+        usuario.Lugar_de_Residencia = residence.getText().toString();
+        usuario.Fecha_de_Nacimiento= birth.getText().toString();
+        usuario.Telefono = Integer.parseInt(phone.getText().toString());
+
+        DBHandler db = DBHandler.getSingletonInstance(this);
+        db.addUsuario(usuario);
+        //TODO asociate user to role
         //TODO check if user id already exists
 
         if(origin.equals("login")){
             Intent intent = new Intent(this, MainScreen.class);
+            intent.putExtra("id", usuario.Cedula);
             startActivity(intent);
-
         } else{
             finish();
         }

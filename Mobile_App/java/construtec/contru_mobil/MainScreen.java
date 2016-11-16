@@ -9,6 +9,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,9 +26,12 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import Database.DBHandler;
 import models.Pedido;
 import models.Usuario;
 import android.widget.DatePicker;
+
+import static android.text.InputType.TYPE_CLASS_NUMBER;
 
 public class MainScreen extends AppCompatActivity {
 
@@ -55,28 +59,33 @@ public class MainScreen extends AppCompatActivity {
                 this,
                 android.R.layout.simple_list_item_1,
                 pedidosList );
-        updateListaPedidos();
 
         productosAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_list_item_1,
                 productosList);
-        updateListaProductos();
 
         categoriasAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_list_item_1,
                 categoriasList);
-        updateListaCategorias();
 
-        //TODO get this information from the DB
-        usuario = new Usuario();
-        usuario.nombre = "Emmanuel";
-        usuario.apellidos = "Madrigal";
-        usuario.cedula = 304960478;
-        usuario.date = "6-8-1996";
-        usuario.residencia = "Cartago, Costa Rica";
-        usuario.Telefono = 87947188;
+        long userId = getIntent().getLongExtra("id", 0);
+        Log.i("userID_recibido", Long.toString(userId));
+
+        DBHandler db = DBHandler.getSingletonInstance(this);
+
+        usuario =  db.getUsuario(userId);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        //Updates the information on the lists
+        updateListaPedidos();
+        updateListaProductos();
+        updateListaCategorias();
     }
 
     /**
@@ -180,7 +189,11 @@ public class MainScreen extends AppCompatActivity {
                     {
                         @Override
                         public void onClick(View v) {
-                            //TODO make call the the DBhandler
+                            usuario.Nombre = np.getText().toString();
+
+                            DBHandler db = DBHandler.getSingletonInstance(null);
+                            db.updateUsuario(usuario);
+
                             name.setText(np.getText());
                             d.dismiss();
                         }
@@ -212,7 +225,11 @@ public class MainScreen extends AppCompatActivity {
                     {
                         @Override
                         public void onClick(View v) {
-                            //TODO make call the the DBhandler
+                            usuario.Apellido = np.getText().toString();
+
+                            DBHandler db = DBHandler.getSingletonInstance(null);
+                            db.updateUsuario(usuario);
+
                             lastName.setText(np.getText());
                             d.dismiss();
                         }
@@ -249,7 +266,12 @@ public class MainScreen extends AppCompatActivity {
                         public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
                             selectedmonth = selectedmonth + 1;
                             String newDate = Integer.toString(selectedyear) +"-" +   Integer.toString(selectedmonth) +"-" + Integer.toString(selectedday);
-                            //TODO make call to DB Handler
+
+                            usuario.Fecha_de_Nacimiento = newDate;
+
+                            DBHandler db = DBHandler.getSingletonInstance(null);
+                            db.updateUsuario(usuario);
+
                             date.setText(newDate);
                         }
 
@@ -275,7 +297,11 @@ public class MainScreen extends AppCompatActivity {
                     {
                         @Override
                         public void onClick(View v) {
-                            //TODO make call the the DBhandler
+                            usuario.Lugar_de_Residencia = np.getText().toString();
+
+                            DBHandler db = DBHandler.getSingletonInstance(null);
+                            db.updateUsuario(usuario);
+
                             address.setText(np.getText());
                             d.dismiss();
                         }
@@ -308,8 +334,12 @@ public class MainScreen extends AppCompatActivity {
                     {
                         @Override
                         public void onClick(View v) {
-                            //TODO make call the the DBhandler
-                            name.setText(np.getText());
+                            usuario.Telefono = Integer.parseInt(np.getText().toString());
+
+                            DBHandler db = DBHandler.getSingletonInstance(null);
+                            db.updateUsuario(usuario);
+
+                            phone.setText(np.getText());
                             d.dismiss();
                         }
                     });
@@ -326,11 +356,11 @@ public class MainScreen extends AppCompatActivity {
             phone.setOnClickListener(updatePhone);
 
 
-            name.setText(usuario.nombre);
-            lastName.setText(usuario.apellidos);
-            cedula.setText(Long.toString(usuario.cedula));
-            date.setText(usuario.date);
-            address.setText(usuario.residencia);
+            name.setText(usuario.Nombre);
+            lastName.setText(usuario.Apellido);
+            cedula.setText(Long.toString(usuario.Cedula));
+            date.setText(usuario.Fecha_de_Nacimiento);
+            address.setText(usuario.Lugar_de_Residencia);
             phone.setText(Long.toString(usuario.Telefono));
 
 
@@ -390,11 +420,63 @@ public class MainScreen extends AppCompatActivity {
                     //Calls an activity with the corresponding data
                     Intent intent = new Intent(view.getContext(), detallesPedido.class);
                     intent.putExtra("id", data);
+                    intent.putExtra("userID", usuario.Cedula);
                     startActivity(intent);
                 }
             });
 
+            Button create = (Button) rootView.findViewById(R.id.create);
+            create.setText("Crear nuevo pedido");
 
+            create.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    View.OnClickListener createActivity = new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            final Dialog d = new Dialog(getContext());
+                            d.setContentView(R.layout.text_popup);
+                            Button setValue = (Button) d.findViewById(R.id.set);
+                            setValue.setText("Crear");
+
+                            Button cancelAction = (Button) d.findViewById(R.id.cancel);
+
+                            final EditText np = (EditText) d.findViewById(R.id.newValue);
+                            np.setHint("Teléfono Preferido");
+                            np.setInputType(TYPE_CLASS_NUMBER);
+
+                            setValue.setOnClickListener(new View.OnClickListener()
+                            {
+                                @Override
+                                public void onClick(View v) {
+                                    Pedido pedido = new Pedido();
+
+                                    pedido.Cedula_Cliente = usuario.Cedula;
+                                    pedido.Id_Sucursal = 0;
+                                    pedido.Telefono_Preferido = Integer.parseInt(np.getText().toString());
+
+                                    Calendar cal = Calendar.getInstance();
+                                    pedido.Hora_de_Creación = cal.getTime().toString();
+
+                                    DBHandler db = DBHandler.getSingletonInstance(getContext());
+                                    db.addPedido(pedido);
+
+                                    updateListaPedidos();
+
+                                    d.dismiss();
+                                }
+                            });
+                            cancelAction.setOnClickListener(new View.OnClickListener()
+                            {
+                                @Override
+                                public void onClick(View v) {
+                                    d.dismiss();
+                                }
+                            });
+                            d.show();
+                        }
+                    };
+                }
+            });
 
             return rootView;
         }
@@ -442,6 +524,8 @@ public class MainScreen extends AppCompatActivity {
 
             list.setAdapter(MainScreen.categoriasAdapter);
 
+            //TODO add a way to filtrate the items
+
             list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View view,
                                         int position, long id) {
@@ -450,7 +534,17 @@ public class MainScreen extends AppCompatActivity {
                     //Calls an activity with the corresponding data
                     Intent intent = new Intent(view.getContext(), detallesCategoria.class);
                     intent.putExtra("id", data);
+                    intent.putExtra("userID", usuario.Cedula);
                     startActivity(intent);
+                }
+            });
+
+            Button create = (Button) rootView.findViewById(R.id.create);
+            create.setText("Crear nueva Categoria");
+
+            create.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    //TODO call create category activity
                 }
             });
 
@@ -501,19 +595,33 @@ public class MainScreen extends AppCompatActivity {
 
             list.setAdapter(MainScreen.productosAdapter);
 
+            //TODO add a way to filtrate the items
+
             list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View view,
                                         int position, long id) {
                     String data = (String) list.getItemAtPosition(position);
 
-                    //TODO add a way to filtrate the items
-
                     //Calls an activity with the corresponding data
                     Intent intent = new Intent(view.getContext(), productDetails.class);
                     intent.putExtra("id", data);
+                    intent.putExtra("userID", usuario.Cedula);
                     startActivity(intent);
                 }
             });
+
+            //TODO hide button if user isn't a supplier
+
+            Button create = (Button) rootView.findViewById(R.id.create);
+            create.setText("Crear nuevo Producto");
+
+            create.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    //TODO call create producto activity
+                }
+            });
+
+
             return rootView;
         }
     }
@@ -598,33 +706,20 @@ public class MainScreen extends AppCompatActivity {
      * @param v view calling this function
      */
     public void delete(View v){
-        //TODO avoid delete from vendedores
+        //TODO avoid delete if user is vendedor
     }
 
     /**
      * Updates the orders list from the data in the database and triggers a refresh on the DB
      */
-    public void updateListaPedidos(){
+    public static void updateListaPedidos(){
         pedidosList.clear();
 
-        //TODO take this information from the DB
-        List<models.Pedido> pedidos = new LinkedList<>();
+        DBHandler db = DBHandler.getSingletonInstance(null);//The DBHandler has already been created
 
-        Pedido pedido = new Pedido();
-        pedido.Id_Pedido = 1;
-        pedidos.add(pedido);
+        List<models.Pedido> pedidos = db.getPedidosCliente(usuario.Cedula);
 
-        pedido = new Pedido();
-        pedido.Id_Pedido = 2;
-        pedidos.add(pedido);
-
-        pedido = new Pedido();
-        pedido.Id_Pedido = 3;
-        pedidos.add(pedido);
-
-        pedido = new Pedido();
-        pedido.Id_Pedido = 4;
-        pedidos.add(pedido);
+        Pedido pedido;
 
         for(int i =0; i < pedidos.size(); i++){
             pedido = pedidos.get(i);
@@ -636,28 +731,13 @@ public class MainScreen extends AppCompatActivity {
     /**
      * Updates the products list from the data in the database and triggers a refresh on the DB
      */
-    public void updateListaProductos(){
-        //TODO take this information from the DB
-        List<models.Producto> productos = new LinkedList<>();
+    public static void updateListaProductos(){
+        productosList.clear();
 
-        models.Producto producto = new models.Producto();
-        producto.Nombre_Producto = "Carro";
-        productos.add(producto);
+        DBHandler db = DBHandler.getSingletonInstance(null);//The DBHandler has already been created
+        List<models.Producto> productos = db.getAllProductos();
 
-        producto = new models.Producto();
-        producto.Nombre_Producto = "Refrigeradora";
-        productos.add(producto);
-
-        producto = new models.Producto();
-        producto.Nombre_Producto = "Clavo";
-        productos.add(producto);
-
-        producto = new models.Producto();
-        producto.Nombre_Producto = "Tornillo";
-        productos.add(producto);
-
-
-
+        models.Producto producto;
         for(int i =0; i < productos.size(); i++){
             producto = productos.get(i);
             productosList.add(producto.Nombre_Producto);
@@ -667,27 +747,14 @@ public class MainScreen extends AppCompatActivity {
     /**
      * Updates the categories list from the data in the database and triggers a refresh on the DB
      */
-    public void updateListaCategorias(){
-        //TODO take this information from the DB
-        List<models.Categoria> categorias = new LinkedList<>();
+    public static void updateListaCategorias(){
+        DBHandler db = DBHandler.getSingletonInstance(null);//The DBHandler has already been created
+        List<models.Categoria> categorias = db.getAllCategorias();
 
-        models.Categoria categoria = new models.Categoria();
-        categoria.nombre = "Linea Blanca";
-        categorias.add(categoria);
-
-        categoria = new models.Categoria();
-        categoria.nombre = "Cosntruccion";
-        categorias.add(categoria);
-
-        categoria = new models.Categoria();
-        categoria.nombre = "Hogar";
-        categorias.add(categoria);
-
-
-
+        models.Categoria categoria;
         for(int i =0; i < categorias.size(); i++){
             categoria = categorias.get(i);
-            categoriasList.add(categoria.nombre);
+            categoriasList.add(categoria.Nombre);
         }
     }
 }

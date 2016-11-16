@@ -1,4 +1,4 @@
-package prueba.appprueba.models;
+package models;
 
 
 public class Producto {

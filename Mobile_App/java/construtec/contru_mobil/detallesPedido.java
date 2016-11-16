@@ -21,6 +21,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import Database.DBHandler;
 import models.Pedido;
 import models.Producto;
 
@@ -38,32 +39,11 @@ public class detallesPedido extends AppCompatActivity {
 
         SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
+        String pedidoID = getIntent().getStringExtra("id");
 
-        //TODO get information from the DBHandler
-        pedido = new Pedido();
-        pedido.Id_Pedido = 1;
-        pedido.id_sucursal = 54;
-        pedido.telefono = 12345;
-        pedido.cedula = 304960478;
-        pedido.hora = "15:00:15";
-        pedido.productos = new ArrayList<>();
-        Producto producto;
+        DBHandler db = DBHandler.getSingletonInstance(this);
 
-        producto = new Producto();
-        producto.Nombre_Producto = "Carro";
-        pedido.productos.add(producto);
-
-        producto = new Producto();
-        producto.Nombre_Producto = "Refrigeradora";
-        pedido.productos.add(producto);
-
-        producto = new Producto();
-        producto.Nombre_Producto = "Clavo";
-        pedido.productos.add(producto);
-
-        producto = new Producto();
-        producto.Nombre_Producto = "Tornillo";
-        pedido.productos.add(producto);
+        pedido = db.getPedido(Long.parseLong(pedidoID));
 
         productosAdapter = new ArrayAdapter<>(
                 this,
@@ -75,7 +55,7 @@ public class detallesPedido extends AppCompatActivity {
         ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        //TODO hide retirar producto if user isn't the provider
+        //TODO hide delete pedido if user isn't the owner?
     }
 
     /**
@@ -159,11 +139,11 @@ public class detallesPedido extends AppCompatActivity {
             final TextView phoneNumber =  (TextView) rootView.findViewById(R.id.phoneNumber);
             TextView creationTime =  (TextView) rootView.findViewById(R.id.creationTime);
 
-            sucursal.setText(Long.toString(pedido.id_sucursal));
-            clientID.setText(Long.toString(pedido.cedula));
-            creationTime.setText(pedido.hora);
+            sucursal.setText(Long.toString(pedido.Id_Sucursal));
+            clientID.setText(Long.toString(pedido.Cedula_Cliente));
+            creationTime.setText(pedido.Hora_de_Creación);
 
-            phoneNumber.setText(Long.toString(pedido.telefono));
+            phoneNumber.setText(Long.toString(pedido.Telefono_Preferido));
 
             View.OnClickListener updatePhone = new View.OnClickListener() {
                 @Override

@@ -1,8 +1,4 @@
-package prueba.appprueba.models;
-
-/**
- * Created by kquiros96 on 13/11/16.
- */
+package models;
 
 public class Rol {
     public long Id_rol;

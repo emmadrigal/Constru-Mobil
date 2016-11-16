@@ -7,6 +7,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
+import Database.DBHandler;
+import models.Usuario;
+
 public class LoginActivity extends AppCompatActivity {
     // UI references
     private EditText mUserName;
@@ -33,9 +36,8 @@ public class LoginActivity extends AppCompatActivity {
 
         if(!userId.equals("")){
             if(userExists(userName, Integer.parseInt(userId))){
-                //TODO test user name before advancing
                 Intent intent = new Intent(this, MainScreen.class);
-                intent.putExtra("id", Integer.parseInt(userId));
+                intent.putExtra("id", Long.parseLong(userId));
                 startActivity(intent);
             }else{
                 mUserName.setError("User Name and Id don't match");
@@ -61,8 +63,11 @@ public class LoginActivity extends AppCompatActivity {
      * @return boolean indicating if the user exists on the Database
      */
     private boolean userExists(String name, int userId){
-        //TODO: make call to DB
+        DBHandler db = DBHandler.getSingletonInstance(this);
 
-        return true;
+        Usuario usuario=  db.getUsuario(userId);
+
+        return usuario.Nombre.equals(name);
+
     }
 }
