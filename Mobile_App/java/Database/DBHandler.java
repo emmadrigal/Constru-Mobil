@@ -88,7 +88,13 @@ public class DBHandler extends SQLiteOpenHelper {
             "FOREIGN KEY(Nombre_Producto) REFERENCES PRODUCTO(Nombre_Producto)" +
             ");";
 
-    private static DBHandler DBHanlder;
+    private static final String SQL_CREATE_TABLE_REGISTRO = "CREATE TABLE REGISTRO(" +
+            "id_Registro INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "tipo VARCHAR(30), " +
+            "json TEXT" +
+            ");";
+
+    private static DBHandler DBHandler;
     private Context context;
 
     private DBHandler(Context context) {
@@ -97,14 +103,14 @@ public class DBHandler extends SQLiteOpenHelper {
     }
 
     public static DBHandler getSingletonInstance(Context context) {
-        if (DBHanlder == null){
-            DBHanlder = new DBHandler(context);
+        if (DBHandler == null){
+            DBHandler = new DBHandler(context);
         }
         else{
             System.out.println("No se puede crear el objeto porque ya existe un objeto de la clase DBHanlder");
         }
 
-        return DBHanlder;
+        return DBHandler;
     }
 
     @Override
@@ -118,6 +124,7 @@ public class DBHandler extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_TABLE_ROL);
         db.execSQL(SQL_CREATE_TABLE_CONTIENE);
         db.execSQL(SQL_CREATE_TABLE_EMPLEADOSUCURSAL);
+        db.execSQL(SQL_CREATE_TABLE_REGISTRO);
 
         ContentValues values = new ContentValues();
         values.put("nombre", "Proveedor");
@@ -136,12 +143,12 @@ public class DBHandler extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-
     }
 
     //Métodos para la tabla Usuario
     public void addUsuario(Usuario usuario){
         ContentValues values = new ContentValues();
+        ContentValues values2 = new ContentValues();
 
         values.put("Cedula", usuario.Cedula);
         values.put("Nombre", usuario.Nombre);
@@ -151,11 +158,24 @@ public class DBHandler extends SQLiteOpenHelper {
         values.put("Telefono", usuario.Telefono);
 
         insertInDB("USUARIO", values);
+
+        //Crea el string para el json que se almacena en el registro de queries
+        String json = "/Cliente/{Cedula_Cliente:"+usuario.Cedula+", " +
+                "Nombre:"+usuario.Nombre+", " +
+                "Apellidos"+usuario.Apellido+", " +
+                "Residencia:"+usuario.Lugar_de_Residencia+", " +
+                "Nacimiento:"+usuario.Fecha_de_Nacimiento+", " +
+                "Telefono:"+usuario.Telefono+"}";
+
+        values2.put("tipo", "POST");
+        values2.put("json", json);
+
+        //almacena los datos en el registro y agrega que se añadió un usuario
+        insertInDB("REGISTRO", values2);
     }
 
     public void addRol(long userID, String rol) {
-        Log.i("rol-usuario", Long.toString(userID) + rol);
-
+        //Log.i("rol-usuario", Long.toString(userID) + rol);
         ContentValues values = new ContentValues();
 
         values.put("usuario", userID);
@@ -173,12 +193,16 @@ public class DBHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.insert("ROL_USUARIO", null, values);
         db.close();
-
-
     }
 
     public void deleteUsuario(long id){
         deleteFromDB("USUARIO", "Cedula", String.valueOf(id));
+
+        //Agrega al registro que se eliminto el usuario
+        ContentValues values = new ContentValues();
+        values.put("tipo", "DELETE");
+        values.put("json", "/Cliente/{"+id+"}");
+        insertInDB("REGISTRO", values);
     }
 
     public void updateUsuario(Usuario usuario){
@@ -407,9 +431,9 @@ public class DBHandler extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         if (cursor != null) {cursor.moveToFirst();}
-        
+
         db.close();
-        
+
         return cursor;
     }
 
@@ -434,7 +458,7 @@ public class DBHandler extends SQLiteOpenHelper {
 
         return pedidos;
     }
-    
+
     public List<Producto> getProductosVendedor(long id){
         List<Producto> productos = new ArrayList<Producto>();
         Cursor cursor = getRowFromDB("PRODUCTO", "Cedula_Proveedor", String.valueOf(id));
@@ -479,7 +503,7 @@ public class DBHandler extends SQLiteOpenHelper {
         }
         return productos;
     }
-    
+
     public List<Producto> getAllProductos(){
         List<Producto> productos = new ArrayList<Producto>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -504,7 +528,7 @@ public class DBHandler extends SQLiteOpenHelper {
                 productos.add(producto);
             } while (cursor.moveToNext());
         }
-        
+
         db.close();
         return productos;
     }
@@ -558,8 +582,33 @@ public class DBHandler extends SQLiteOpenHelper {
         db.close();
         return roles;
     }
-    /*
- qué pasa si se trata de hacer un get de un objeto que no existe? se cae?
- Y no estoy seguro si esta, pero necesito roles por usuario
- Los nombres en si, no los ID*/
+
+    public void SyncDB(){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String selectQuery = "SELECT * FROM REGISTRO";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                //Revisa que tipo de query es
+                if(cursor.getString(cursor.getColumnIndex("tipo")) == "DELETE"){
+                    //HACE UN DELETE
+                    //Acá llama al restful api para actualizar la DB con el json de
+                    // String json = cursor.getString(cursor.getColumnIndex("json"));
+                }
+                else if(cursor.getString(cursor.getColumnIndex("tipo")) == "POST"){
+                    //HACE UN POST
+                }
+                else{
+                    //HACE UN PUT
+                }
+                //Elimina el query del registro porque ya se actualizó en la DB
+                deleteFromDB("REGISTRO", "id_Registro", cursor.getString(cursor.getColumnIndex("id_Registro")));
+            } while (cursor.moveToNext());
+        }
+
+        db.close();
+    }
 }
