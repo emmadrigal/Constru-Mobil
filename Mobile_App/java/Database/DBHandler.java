@@ -94,7 +94,6 @@ public class DBHandler extends SQLiteOpenHelper {
             "FOREIGN KEY(Nombre_Producto) REFERENCES PRODUCTO(Nombre_Producto)" +
             ");";
 
-<<<<<<< HEAD
     private static final String SQL_CREATE_TABLE_LOG = "CREATE TABLE LOG(" +
             "id_log INTEGER PRIMARY KEY AUTOINCREMENT, " +
             "tipo varchar(6) NOT NULL, " +
@@ -103,15 +102,7 @@ public class DBHandler extends SQLiteOpenHelper {
             ");";
 
     private static DBHandler DBHanlder;
-=======
-    private static final String SQL_CREATE_TABLE_REGISTRO = "CREATE TABLE REGISTRO(" +
-            "id_Registro INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            "tipo VARCHAR(30), " +
-            "json TEXT" +
-            ");";
 
-    private static DBHandler DBHandler;
->>>>>>> 56e00e7c41e3f26edd19052b21d981556f4ec523
     private Context context;
     //Indica si se está sincronizando con la base de datos en este momento
     private static boolean syncing;
@@ -143,11 +134,7 @@ public class DBHandler extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_TABLE_ROL_USUARIO);
         db.execSQL(SQL_CREATE_TABLE_ROL);
         db.execSQL(SQL_CREATE_TABLE_EMPLEADOSUCURSAL);
-<<<<<<< HEAD
-        db.execSQL(SQL_CREATE_TABLE_LOG);
-=======
         db.execSQL(SQL_CREATE_TABLE_REGISTRO);
->>>>>>> 56e00e7c41e3f26edd19052b21d981556f4ec523
 
         ContentValues values = new ContentValues();
         values.put("Id_rol", 1);
@@ -343,7 +330,6 @@ public class DBHandler extends SQLiteOpenHelper {
 
         insertInDB("USUARIO", values);
 
-<<<<<<< HEAD
         if(!syncing){
             JSONObject json = new JSONObject();
             try {
@@ -365,21 +351,6 @@ public class DBHandler extends SQLiteOpenHelper {
                 e.printStackTrace();
             }
         }
-=======
-        //Crea el string para el json que se almacena en el registro de queries
-        String json = "/Cliente/{Cedula_Cliente:"+usuario.Cedula+", " +
-                "Nombre:"+usuario.Nombre+", " +
-                "Apellidos"+usuario.Apellido+", " +
-                "Residencia:"+usuario.Lugar_de_Residencia+", " +
-                "Nacimiento:"+usuario.Fecha_de_Nacimiento+", " +
-                "Telefono:"+usuario.Telefono+"}";
-
-        values2.put("tipo", "POST");
-        values2.put("json", json);
-
-        //almacena los datos en el registro y agrega que se añadió un usuario
-        insertInDB("REGISTRO", values2);
->>>>>>> 56e00e7c41e3f26edd19052b21d981556f4ec523
     }
 
     /**
@@ -388,28 +359,6 @@ public class DBHandler extends SQLiteOpenHelper {
      * @param rol rol a asociar
      */
     public void addRol(long userID, String rol) {
-<<<<<<< HEAD
-=======
-        //Log.i("rol-usuario", Long.toString(userID) + rol);
->>>>>>> 56e00e7c41e3f26edd19052b21d981556f4ec523
-        ContentValues values = new ContentValues();
-
-        values.put("usuario", userID);
-        switch (rol){
-            case "Cliente" :{
-                values.put("rol", 2);//Estos valores dependen de los roles creados
-                break;
-            }
-            case "Proveedor":{
-                values.put("rol", 1);//Estos valores dependen de los roles creados
-                break;
-            }
-        }
-
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.insert("ROL_USUARIO", null, values);
-        db.close();
-<<<<<<< HEAD
 
         if(!syncing){
             JSONObject json = new JSONObject();
@@ -428,16 +377,11 @@ public class DBHandler extends SQLiteOpenHelper {
                 e.printStackTrace();
             }
         }
-
-
-=======
->>>>>>> 56e00e7c41e3f26edd19052b21d981556f4ec523
     }
 
     public void deleteUsuario(long id){
         deleteFromDB("USUARIO", "Cedula", String.valueOf(id));
 
-<<<<<<< HEAD
         if(!syncing){
             ContentValues logvalues = new ContentValues();
             logvalues.put("tipo", "Delete");
@@ -445,13 +389,6 @@ public class DBHandler extends SQLiteOpenHelper {
 
             insertInDB("LOG", logvalues);
         }
-=======
-        //Agrega al registro que se eliminto el usuario
-        ContentValues values = new ContentValues();
-        values.put("tipo", "DELETE");
-        values.put("json", "/Cliente/{"+id+"}");
-        insertInDB("REGISTRO", values);
->>>>>>> 56e00e7c41e3f26edd19052b21d981556f4ec523
     }
 
     public void updateUsuario(Usuario usuario){
