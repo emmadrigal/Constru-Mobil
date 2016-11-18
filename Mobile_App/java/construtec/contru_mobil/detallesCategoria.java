@@ -1,5 +1,4 @@
-package com.example.emmanuel.construmobil;
-
+package construtec.contru_mobil;
 import android.app.Dialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;

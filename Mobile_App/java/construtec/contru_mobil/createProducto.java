@@ -1,5 +1,4 @@
-package com.example.emmanuel.construmobil;
-
+package construtec.contru_mobil;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,7 +20,6 @@ public class createProducto extends AppCompatActivity {
         userID = getIntent().getStringExtra("userID");
 
         //TODO set category as a spinner? or give options
-        //TODO give only si & no options on exento
     }
 
     public void Create(View view) {

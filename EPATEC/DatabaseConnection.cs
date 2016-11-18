@@ -1812,6 +1812,79 @@ namespace DatabaseConnection
                 }
             }//End of using
         }//End of the method
+		
+		/// <summary>
+        /// Get the order of a client
+        /// </summary>
+        /// <param name="cedula">id of the client</param>
+        /// <returns>the list of order</returns>
+        public List<Pedido> get_All_Pedido()
+        {
+            string command = "SELECT * FROM PEDIDO";
+            try
+            {
+                using (myConnection = new SqlConnection(connectionString))
+                {
+                    myConnection.Open();
+                    using (SqlCommand comando = new SqlCommand(command, myConnection))
+                    {
+                        using (SqlDataReader reader = comando.ExecuteReader())
+                        {
+                            Pedido pedido;
+                            if (reader.HasRows)
+                            {
+                                List<Pedido> PedidosCliente = new List<Pedido>();
+                                while (reader.Read())
+                                {
+                                    pedido = new Pedido();
+                                    long id = (long)reader["Id_Pedido"];
+                                    pedido.id_Pedido = id;
+                                    pedido.Cedula_Cliente = (long)reader["Cedula_Cliente"];
+                                    pedido.id_Sucursal = (long)reader["Id_Sucursal"];
+                                    pedido.Telefono = (int)reader["Telefono_Preferido"];
+                                    pedido.Hora = ((DateTime)reader["Hora_de_Creación"]).ToString();
+
+                                    pedido.productos = new List<ProductoPedido>();
+                                    using (SqlConnection myConnection2 = new SqlConnection(connectionString))
+                                    {
+                                        myConnection2.Open();
+                                        string command2 = "SELECT * FROM PRODUCTO JOIN CONTIENE ON PRODUCTO.Nombre_Producto = CONTIENE.Nombre_Producto WHERE CONTIENE.Id_Pedido = @id";
+                                        using (SqlCommand comando2 = new SqlCommand(command2, myConnection2))
+                                        {
+                                            comando2.Parameters.AddWithValue("@id", id);
+                                            using (SqlDataReader reader2 = comando2.ExecuteReader())
+                                            {
+                                                ProductoPedido producto;
+                                                if (reader2.HasRows)
+                                                {
+                                                    while (reader2.Read())
+                                                    {
+                                                        producto = new ProductoPedido();
+                                                        producto.nombre = (string)reader2["Nombre_Producto"];
+                                                        producto.Quantity = (int)reader2["Cantidad"];
+                                                        pedido.productos.Add(producto);
+                                                    }//End of while
+                                                }//End of if
+                                            }//End of using
+                                        }//End of using
+                                    }//End of using
+                                    PedidosCliente.Add(pedido);
+                                }//End of while
+                                return PedidosCliente;
+                            }//End of if
+                            else
+                            {
+                                return null;
+                            }
+                        }//End of using
+                    }//End of using
+                }//End of using
+            } catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine("Error en get_PedidoCliente: " + e.Message);
+                return null;
+            }//End of the catch
+        }//End of the mthod
 
         /// <summary>
         /// Get a order with the id specified by the parameter 

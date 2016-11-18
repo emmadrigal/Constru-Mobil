@@ -1,6 +1,9 @@
-package com.example.emmanuel.construmobil;
+package construtec.contru_mobil;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,9 +28,46 @@ public class LoginActivity extends AppCompatActivity {
 
         mUserId = (EditText) findViewById(R.id.userId);
 
-        DBHandler db = DBHandler.getSingletonInstance(this);
+        //Inicializa la base de datos
+        DBHandler.getSingletonInstance(this);
+        //Inicia el ciclo de conección
+        startSync();
+    }
 
-        db.getRolesUsuario(0);
+    public void startSync(){
+        Thread thread = new Thread()
+        {
+            @Override
+            public void run() {
+                try {
+                    while(true) {
+                        sleep(10000);
+                        Log.i("hay_internet", String.valueOf(isNetworkAvailable()));
+                        if (isNetworkAvailable()){
+                            DBHandler.getSingletonInstance(null).SyncDB();
+                        }
+                    }
+                } catch (InterruptedException e) {}
+            }
+        };
+
+        thread.start();
+    }
+
+    /**
+     *Check all connectivities whether available or not
+     * @return state of current connection to the Internet
+     */
+    public boolean isNetworkAvailable() {
+        ConnectivityManager cm = (ConnectivityManager)
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+        // if no network is available networkInfo will be null
+        // otherwise check if we are connected
+        if (networkInfo != null && networkInfo.isConnected()) {
+            return true;
+        }
+        return false;
     }
 
     /**

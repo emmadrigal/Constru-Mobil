@@ -1,5 +1,4 @@
-package com.example.emmanuel.construmobil;
-
+package construtec.contru_mobil;
 import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -27,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import Database.DBHandler;
+import models.Contiene;
 import models.Pedido;
 
 public class detallesPedido extends AppCompatActivity {
@@ -65,8 +65,6 @@ public class detallesPedido extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-
-        //TODO hide delete pedido if user isn't the owner?
     }
 
     @Override
@@ -346,10 +344,9 @@ public class detallesPedido extends AppCompatActivity {
     public static void updateContiene(int value){
         DBHandler db = DBHandler.getSingletonInstance(null);//The DBHandler has already been created
 
-        ContentValues values = new ContentValues();
-        values.put("Cantidad", value);
-
-        db.updateFromDB("CONTIENE", values, "id_Contiene="+contieneID);
+        Contiene contiene = db.getContiene(contieneID);
+        contiene.Cantidad = value;
+        db.updateContiene(contiene);
 
         updateProductos();
     }

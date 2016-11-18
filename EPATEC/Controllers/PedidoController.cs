@@ -22,6 +22,18 @@ namespace EPATEC.Controllers
             }
             return Ok(product);
         }
+		
+		[Route("~/getAllPedidos")]
+        [HttpGet]
+        public IHttpActionResult getPedido()
+        {
+            var product = Connection.Instance.get_All_Pedido();
+            if (product == null)
+            {
+                return NotFound();
+            }
+            return Ok(product);
+        }
 
         [Route("~/getAllPedidoSucursal/{id}")]
         [HttpGet]

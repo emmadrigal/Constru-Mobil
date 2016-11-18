@@ -1,5 +1,4 @@
-package com.example.emmanuel.construmobil;
-
+package construtec.contru_mobil;
 import android.app.Dialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
@@ -535,7 +534,7 @@ public class MainScreen extends AppCompatActivity {
 
             list.setAdapter(MainScreen.categoriasAdapter);
 
-            //TODO add a way to filtrate the items
+            //TODO add a way to filtrate the items?
 
             list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View view,
@@ -609,7 +608,7 @@ public class MainScreen extends AppCompatActivity {
 
             list.setAdapter(MainScreen.productosAdapter);
 
-            //TODO add a way to filtrate the items
+            //TODO add a way to filtrate the items?
 
             list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View view,
@@ -712,7 +711,8 @@ public class MainScreen extends AppCompatActivity {
             View.OnClickListener sync = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //TODO force sincronization with EPATEC
+                    DBHandler db = DBHandler.getSingletonInstance(null);
+                    db.SyncDB();
                 }
             };
             Sync.setOnClickListener(sync);

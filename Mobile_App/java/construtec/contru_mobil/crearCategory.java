@@ -1,5 +1,4 @@
-package com.example.emmanuel.construmobil;
-
+package construtec.contru_mobil;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -7,6 +6,7 @@ import android.view.View;
 import android.widget.EditText;
 
 import Database.DBHandler;
+import construtec.contru_mobil.R;
 import models.Categoria;
 
 public class crearCategory extends AppCompatActivity {

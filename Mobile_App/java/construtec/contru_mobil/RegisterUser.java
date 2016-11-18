@@ -1,4 +1,4 @@
-package com.example.emmanuel.construmobil;
+package construtec.contru_mobil;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
@@ -122,7 +122,6 @@ public class RegisterUser extends AppCompatActivity {
      * @param view that calls this method
      */
     public void LogIn(View view){
-        //TODO check that name and phone aren't empty
         Usuario usuario=  new Usuario();
         if(!id.getText().toString().isEmpty())
             usuario.Cedula = Integer.parseInt(id.getText().toString());
