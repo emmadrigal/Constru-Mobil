@@ -35,9 +35,9 @@ namespace EPATEC.Controllers
         [HttpPut]
         public IHttpActionResult putPedidoSinID(long userID, string time, string campo, string newValue)
         {
-            if (campo == "Cantidad")
+            if (campo == "Telefono_Preferido")
             {
-                Connection.Instance.update_Pedido_Telefono(userID, time, campo, newValue);
+                Connection.Instance.update_Pedido_Telefono(userID, time, newValue);
             }
             return Ok();
         }

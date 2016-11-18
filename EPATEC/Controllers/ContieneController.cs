@@ -36,7 +36,7 @@ namespace EPATEC.Controllers
         public IHttpActionResult PutContieneSinID(long userID, string time, string producto, string campo, string newValue)
         {
             if (campo == "Cantidad")
-            {
+            {   
                 Connection.Instance.update_Contiene_Cantidad(userID, time, producto, newValue);
             }
             return Ok();

@@ -53,7 +53,12 @@ public class httpConnection {
                     .build();
 
             Response response = client.newCall(request).execute();
-            respuesta =  response.body().string();
+            if(response.code() == 200){//200 es el código de ok
+                respuesta =  response.body().string();
+            } else{
+                respuesta = null;
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
