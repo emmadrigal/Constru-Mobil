@@ -31,6 +31,17 @@ namespace EPATEC.Controllers
             return Ok(products);
         }
 
+        [Route("{userID}/{time}/{producto}/{campo}/{newValue}")]
+        [HttpPut]
+        public IHttpActionResult PutContieneSinID(long userID, string time, string producto, string campo, string newValue)
+        {
+            if (campo == "Cantidad")
+            {
+                Connection.Instance.update_Contiene_Cantidad(userID, time, producto, newValue);
+            }
+            return Ok();
+        }
+
         [Route("{id}/{campo}/{newValue}")]
         [HttpPut]
         public IHttpActionResult PutContiene(long id, string campo, string newValue)

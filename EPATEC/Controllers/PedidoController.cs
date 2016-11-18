@@ -22,18 +22,6 @@ namespace EPATEC.Controllers
             }
             return Ok(product);
         }
-		
-		[Route("~/getAllPedidos")]
-        [HttpGet]
-        public IHttpActionResult getPedido()
-        {
-            var product = Connection.Instance.get_All_Pedido();
-            if (product == null)
-            {
-                return NotFound();
-            }
-            return Ok(product);
-        }
 
         [Route("~/getAllPedidoSucursal/{id}")]
         [HttpGet]
@@ -41,6 +29,17 @@ namespace EPATEC.Controllers
         {
             var products = Connection.Instance.get_Pedido_By_Sucursal(id);
             return Ok(products);
+        }
+
+        [Route("{userID}/{time}/{campo}/{newValue}")]
+        [HttpPut]
+        public IHttpActionResult putPedidoSinID(long userID, string time, string campo, string newValue)
+        {
+            if (campo == "Cantidad")
+            {
+                Connection.Instance.update_Pedido_Telefono(userID, time, campo, newValue);
+            }
+            return Ok();
         }
 
         [Route("~/PedidoCliente/{id}")]
