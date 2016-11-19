@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="construtec.contru_mobil">
-          
+          package="epatec.construmovil">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
         android:allowBackup="true"
@@ -18,6 +18,47 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity
+            android:name=".RegisterUser"
+            android:label="Register User"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+		<activity
+            android:name=".addProductToPedido"
+            android:label="addProductoToPedido"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+		<activity
+            android:name=".crearCategory"
+            android:label="Crear Category"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+		<activity
+            android:name=".createProducto"
+            android:label="Create Producto"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+		<activity
+            android:name=".detallesCategoria"
+            android:label="Detalles Categoria"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+		<activity
+            android:name=".detallesPedido"
+            android:label="Detalles Pedido"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+		<activity
+            android:name=".MainScreen"
+            android:label="Main Screen"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+		<activity
+            android:name=".productDetails"
+            android:label="Detalles de Producto"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+
     </application>
 
 </manifest>

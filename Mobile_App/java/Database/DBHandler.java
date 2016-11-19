@@ -197,16 +197,17 @@ public class DBHandler extends SQLiteOpenHelper {
                     registro.url = cursor.getString(cursor.getColumnIndex("url"));
                     registro.json = cursor.getString(cursor.getColumnIndex("json"));
 
-                    Log.i("dato", registro.type);
-                    Log.i("dato", registro.url);
-
                     switch (registro.type) {
                         case "POST":
                             if(conexion.sendPost(registro.url, registro.json))
                                 deleteFromDB("LOG", "id_log", Long.toString(registro.Id_Log));
                             break;
                         case "DELETE":
-                            if(conexion.sendDelete(registro.url))
+                            if(registro.url.equals("Contiene")) {
+                                if (conexion.sendDeleteWithBody(registro.url, registro.json))
+                                    deleteFromDB("LOG", "id_log", Long.toString(registro.Id_Log));
+                            }
+                            else if(conexion.sendDelete(registro.url))
                                 deleteFromDB("LOG", "id_log", Long.toString(registro.Id_Log));
                             break;
                         case "PUT":
@@ -708,8 +709,8 @@ public class DBHandler extends SQLiteOpenHelper {
         try {
             json.put("Cedula_Cliente", pedido.Cedula_Cliente);
             json.put("Id_Sucursal", pedido.Id_Sucursal);
-            json.put("Telefono_Preferido", pedido.Telefono_Preferido);
-            json.put("Hora_de_Creación", pedido.Hora_de_Creación);
+            json.put("Telefono", pedido.Telefono_Preferido);
+            json.put("Hora", pedido.Hora_de_Creación);
 
             ContentValues logvalues = new ContentValues();
             logvalues.put("tipo", "POST");
@@ -739,8 +740,8 @@ public class DBHandler extends SQLiteOpenHelper {
             try {
                 json.put("Cedula_Cliente", pedido.Cedula_Cliente);
                 json.put("Id_Sucursal", pedido.Id_Sucursal);
-                json.put("Telefono_Preferido", pedido.Telefono_Preferido);
-                json.put("Hora_de_Creación", pedido.Hora_de_Creación);
+                json.put("Telefono", pedido.Telefono_Preferido);
+                json.put("Hora", pedido.Hora_de_Creación);
 
                 ContentValues logvalues = new ContentValues();
                 logvalues.put("tipo", "POST");
@@ -829,6 +830,33 @@ public class DBHandler extends SQLiteOpenHelper {
         }
     }
 
+    public void deleteContiene(String id_Contiene, Pedido pedido){
+        Contiene contiene = getContiene(id_Contiene);
+
+        deleteFromDB("CONTIENE", "id_Contiene", id_Contiene);
+
+        if(!syncing){
+            ContentValues logvalues = new ContentValues();
+            logvalues.put("tipo", "DELETE");
+            logvalues.put("url", "Contiene");
+
+            JSONObject json = new JSONObject();
+            try {
+                json.put("userID", Long.toString(pedido.Cedula_Cliente));
+                json.put("time", pedido.Hora_de_Creación);
+                json.put("producto", contiene.Nombre_Producto);
+                json.put("cantidad", contiene.Cantidad);
+
+                logvalues.put("json", json.toString());
+
+                insertInDB("LOG", logvalues);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void deletePedido(long id){
         deleteFromDB("PEDIDO", "Id_Pedido", String.valueOf(id));
 
@@ -836,8 +864,7 @@ public class DBHandler extends SQLiteOpenHelper {
         //This could be changed by selecting in EPATEC acording to userID and creationYime
         ContentValues logvalues = new ContentValues();
         logvalues.put("tipo", "DELETE");
-        logvalues.put("url", "Pedido");
-        logvalues.put("json", Long.toString(id));
+        logvalues.put("url", "Pedido/" + Long.toString(id));
 
         insertInDB("LOG", logvalues);
     }

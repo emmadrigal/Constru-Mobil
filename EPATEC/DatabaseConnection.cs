@@ -68,6 +68,24 @@ namespace DatabaseConnection
             //connectionString = "Data Source=.;Initial Catalog=EPATEC;Integrated Security=True";
         }//End of the constructor
 
+             /// <summary>
+             /// Update the amount of the contain
+             /// </summary>
+             /// <param name="id">id of the role</param>
+             /// <param name="newValue">new value</param>
+        public void delete_Contiene(long userID, string time, string producto)
+        {
+            System.Diagnostics.Debug.Print(userID.ToString());
+            System.Diagnostics.Debug.Print(time);
+            System.Diagnostics.Debug.Print(producto);
+            SqlParameter[] myparm = new SqlParameter[3];
+            myparm[0] = new SqlParameter("@userID", userID);
+            myparm[1] = new SqlParameter("@time", time);
+            myparm[2] = new SqlParameter("@producto", producto);
+            string command = "DELETE C FROM (CONTIENE C JOIN PEDIDO P ON C.Id_Pedido = P.Id_Pedido) WHERE P.Cedula_Cliente = @userID AND P.Hora_de_Creación = @time AND C.Nombre_Producto = @producto;";
+            ExecuteCommandWrite(command, myparm);
+        }//End of the method
+
         //########## METHODS OF THE USER TABLE ##################
 
         /// <summary>
@@ -1160,7 +1178,7 @@ namespace DatabaseConnection
         /// <param name="newValue">new value</param>
         public void update_Contiene_Cantidad(long userID, string time, string producto, string newValue)
         {
-            SqlParameter[] myparm = new SqlParameter[2];
+            SqlParameter[] myparm = new SqlParameter[4];
             myparm[0] = new SqlParameter("@cantidad", Int32.Parse(newValue));
             myparm[1] = new SqlParameter("@userID", userID);
             myparm[2] = new SqlParameter("@time", time);
@@ -1829,7 +1847,14 @@ namespace DatabaseConnection
         /// <param name="pedido">order to enter</param>
         public void crear_Pedido(Pedido pedido)
         {
-            string horaActual = DateTime.Now.ToString();
+            System.Diagnostics.Debug.Print("");
+            System.Diagnostics.Debug.Print(pedido.Hora);
+            string horaActual;
+            if (string.IsNullOrEmpty(pedido.Hora))
+                horaActual = DateTime.Now.ToString();
+            else{
+                horaActual = pedido.Hora;
+            }
             //Crea el nuevo pedidoi
             SqlParameter[] myparm = new SqlParameter[4];
             myparm[0] = new SqlParameter("@Cedula", pedido.Cedula_Cliente);

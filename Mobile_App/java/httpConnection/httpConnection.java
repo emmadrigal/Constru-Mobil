@@ -140,5 +140,28 @@ public class httpConnection  {
         }
     }
 
+    public boolean sendDeleteWithBody(String url, String json){
+        url  = "http://" + serviceIp + ":" + port + "/" + url;
+        Log.i("http", url);
+        Log.i("http", "delete");
+        Log.i("http", json);
+        try {
+            RequestBody body = RequestBody.create(JSON, json);
+            Request request = new Request.Builder()
+                    .url(url)
+                    .delete(body)
+                    .build();
+            Response response = client.newCall(request).execute();
+
+            Log.d("codigo", Integer.toString(response.code()));
+            //Si el codigo es 2xx es exito, 3xx es redirección, 4xx es error de cliente y 5xx es error de servidor
+            return (response.code() < 400);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
 }

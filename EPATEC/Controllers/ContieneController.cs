@@ -68,6 +68,7 @@ namespace EPATEC.Controllers
         [Route("")]
         public IHttpActionResult postContiene([FromBody]Models.ContieneSinId contiene)
         {
+            Connection.Instance.delete_Contiene(contiene.userID, contiene.time, contiene.producto);
             Connection.Instance.crear_Contiene(contiene.userID, contiene.time, contiene.producto, contiene.cantidad);
             return Ok();
         }
@@ -77,6 +78,14 @@ namespace EPATEC.Controllers
         public IHttpActionResult deleteContiene(long id)
         {
             Connection.Instance.eliminar_Contiene(id);
+            return Ok();
+        }
+
+        [Route("")]
+        [HttpDelete]
+        public IHttpActionResult deleteContiene([FromBody]Models.ContieneSinId contiene)
+        {
+            Connection.Instance.delete_Contiene(contiene.userID, contiene.time, contiene.producto);
             return Ok();
         }
     }

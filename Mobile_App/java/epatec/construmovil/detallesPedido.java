@@ -27,6 +27,8 @@ import Database.DBHandler;
 import models.Contiene;
 import models.Pedido;
 
+import static android.text.InputType.TYPE_CLASS_NUMBER;
+
 public class detallesPedido extends AppCompatActivity {
 
 
@@ -169,6 +171,7 @@ public class detallesPedido extends AppCompatActivity {
                     Button cancelAction = (Button) d.findViewById(R.id.cancel);
 
                     final EditText np = (EditText) d.findViewById(R.id.newValue);
+                    np.setInputType(TYPE_CLASS_NUMBER);
 
                     setValue.setOnClickListener(new View.OnClickListener()
                     {
@@ -352,7 +355,7 @@ public class detallesPedido extends AppCompatActivity {
     public static void deleteContiene(){
         DBHandler db = DBHandler.getSingletonInstance(null);//The DBHandler has already been created
 
-        db.deleteFromDB("CONTIENE", "id_Contiene", contieneID);
+        db.deleteContiene(contieneID, pedido);
 
         updateProductos();
     }
