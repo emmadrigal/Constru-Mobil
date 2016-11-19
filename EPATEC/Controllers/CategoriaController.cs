@@ -35,6 +35,9 @@ namespace EPATEC.Controllers
         [HttpPut]
         public IHttpActionResult PutCategoria(string id, string campo, string newValue)
         {
+            System.Diagnostics.Debug.WriteLine(id);
+            System.Diagnostics.Debug.WriteLine(campo);
+            System.Diagnostics.Debug.WriteLine(newValue);
             if (campo == "Descripción")
             {
                 Connection.Instance.update_Categoria_Descripcion(id, newValue);

@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.AsyncTask;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -12,11 +14,11 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
 
 import models.*;
 import httpConnection.*;
+
+import static android.os.SystemClock.sleep;
 
 public class DBHandler extends SQLiteOpenHelper {
 
@@ -98,13 +100,15 @@ public class DBHandler extends SQLiteOpenHelper {
             "id_log INTEGER PRIMARY KEY AUTOINCREMENT, " +
             "tipo varchar(6) NOT NULL, " +
             "url text NOT NULL, " +
-            "json text, " +
+            "json text " +
             ");";
 
     private static DBHandler DBHanlder;
     private Context context;
     //Indica si se está sincronizando con la base de datos en este momento
     private static boolean syncing;
+
+    private static boolean updatingDB;
 
     private DBHandler(Context context) {
         super(context, DB_NAME, null, DB_SCHEME_VERSION);
@@ -114,9 +118,6 @@ public class DBHandler extends SQLiteOpenHelper {
     public static DBHandler getSingletonInstance(Context context) {
         if (DBHanlder == null){
             DBHanlder = new DBHandler(context);
-        }
-        else{
-            System.out.println("No se puede crear el objeto porque ya existe un objeto de la clase DBHanlder");
         }
 
         return DBHanlder;
@@ -153,172 +154,227 @@ public class DBHandler extends SQLiteOpenHelper {
 
     }
 
-
-
-    public void SyncDB(){
-        httpConnection conexion = httpConnection.getConnection();
-
-        //Se envian todos los cambios hechos en la aplicación al Web Service
-        String selectQuery = "SELECT * FROM LOG";
-        Cursor cursor = getReadableDatabase().rawQuery(selectQuery, null);
-
-        Registro registro;
-        // looping through all rows and adding to list
-        if (cursor.moveToFirst()) {
-            do {
-                registro = new Registro();
-                registro.Id_Log = cursor.getLong(cursor.getColumnIndex("id_log"));
-                registro.type = cursor.getString(cursor.getColumnIndex("tipo"));
-                registro.url = cursor.getString(cursor.getColumnIndex("url"));
-                registro.json = cursor.getString(cursor.getColumnIndex("json"));
-
-                if (registro.type.equals("POST")) {
-                    if(!conexion.sendPost(registro.url, registro.json))
-                        return; //Si no logra realizar la conexión terminar la sincronización
-                } else if (registro.type.equals("Delete")) {
-                    if(!conexion.sendDelete(registro.url))
-                        return; //Si no logra realizar la conexión terminar la sincronización
-                }
-                else if (registro.type.equals("PUT")) {
-                    if(!conexion.sendPut(registro.url))
-                        return; //Si no logra realizar la conexión terminar la sincronización
-                }
-
-                deleteFromDB("LOG", "id_log", Long.toString(registro.Id_Log));
-            } while (cursor.moveToNext());
-        }
-
-        //Si se logró enviar todos los cambios se envian se solicitan todos los cambios realizados
-        //en el WebService
-        String usersJson = conexion.sendGet("getAllUsuario");
-
-        String rolJson = conexion.sendGet("getAllRol_Usuario");
-
-        String categoriaJson = conexion.sendGet("getAllCategories");
-
-        String productoJson = conexion.sendGet("getAllProducto");
-
-        String pedidoJson = conexion.sendGet("getAllPedidos");
-
-        //Si no se logró obtener todos los datos de la base de datos no hacer nada
-        if((usersJson != null) && (rolJson != null) && (categoriaJson != null) && (productoJson != null) && (pedidoJson != null) ){
-            //Aquí si limpia la base de datos empotrada
-            clearDatabase();
-
-            //Se colocan los nuevos datos sobre la base de datos
-            Usuario user;
-            Categoria categoria;
-            Producto producto;
-            Pedido pedido;
-            Contiene contiene;
-
-            try {
-                //Usuario
-                JSONArray objectList = new JSONArray(usersJson);
-
-                //Iterate the jsonArray and print the info of JSONObjects
-                for(int i=0; i < objectList.length(); i++){
-                    JSONObject jsonObject = objectList.getJSONObject(i);
-                    user = new Usuario();
-                    user.Cedula = jsonObject.getLong("Id_usuario");
-                    user.Nombre = jsonObject.getString("Nombre");
-                    user.Apellido = jsonObject.getString("Apellido");
-                    user.Lugar_de_Residencia = jsonObject.getString("Residencia");
-                    user.Fecha_de_Nacimiento= jsonObject.getString("Fecha_de_Nacimiento");
-                    user.Telefono = jsonObject.getInt("Telefono");
-
-                    addUsuario(user);
-                }
-
-                //ROL
-                objectList = new JSONArray(rolJson);
-
-                //Iterate the jsonArray and print the info of JSONObjects
-                for(int i=0; i < objectList.length(); i++){
-                    JSONObject jsonObject = objectList.getJSONObject(i);
-
-                    if(jsonObject.getLong("Id_rol") == 1)
-                        addRol(jsonObject.getLong("Id_usuario"), "Proveedor");
-                    else if(jsonObject.getLong("Id_rol") == 2)
-                        addRol(jsonObject.getLong("Id_usuario"), "Cliente");
-                    else
-                        addRol(jsonObject.getLong("Id_usuario"), "Proveedor");
-                }
-
-                //Categoria
-                objectList = new JSONArray(categoriaJson);
-
-                //Iterate the jsonArray and print the info of JSONObjects
-                for(int i=0; i < objectList.length(); i++){
-                    JSONObject jsonObject = objectList.getJSONObject(i);
-                    categoria = new Categoria();
-                    categoria.Nombre = jsonObject.getString("Nombre");
-                    categoria.Descripcion = jsonObject.getString("Descripcion");
-
-                    addCategoria(categoria);
-                }
-
-                //Producto
-                objectList = new JSONArray(productoJson);
-
-                //Iterate the jsonArray and print the info of JSONObjects
-                for(int i=0; i < objectList.length(); i++){
-                    JSONObject jsonObject = objectList.getJSONObject(i);
-                    producto = new Producto();
-                    producto.Nombre_Producto  = jsonObject.getString("nombre");
-                    producto.Id_Sucursal  = jsonObject.getLong("id_Sucursal");
-                    producto.Cedula_Proveedor  = jsonObject.getLong("Cedula_Provedor");
-                    producto.descripcion  = jsonObject.getString("Descripcion");
-                    if(jsonObject.getBoolean("Exento"))
-                        producto.exento  = 1;
-                    else
-                        producto.exento  = 0;
-                    producto.precio  = jsonObject.getInt("Precio");
-                    producto.cantidad  = jsonObject.getInt("Cantidad_Disponible");
-                    producto.Nombre_Categoria  = jsonObject.getString("categoria");
-
-                    addProducto(producto);
-                }
-
-                //Pedido
-                objectList = new JSONArray(pedidoJson);
-
-                //Iterate the jsonArray and print the info of JSONObjects
-                for(int i=0; i < objectList.length(); i++){
-                    JSONObject jsonObject = objectList.getJSONObject(i);
-                    pedido = new Pedido();
-                    pedido.Id_Pedido =  jsonObject.getLong("id_Pedido");
-                    pedido.Cedula_Cliente = jsonObject.getLong("Cedula_Cliente");
-                    pedido.Id_Sucursal = jsonObject.getLong("id_Sucursal");
-                    pedido.Telefono_Preferido = jsonObject.getInt("Telefono");
-                    pedido.Hora_de_Creación = jsonObject.getString("Hora");
-
-                    addPedidoConID(pedido);
-
-                    JSONArray listaContiene = jsonObject.getJSONArray("productos");
-
-                    for(int j=0; j < listaContiene.length(); j++){
-                        JSONObject jsonObject2 = listaContiene.getJSONObject(i);
-                        contiene = new Contiene();
-
-                        contiene.Id_Pedido = pedido.Id_Pedido;
-                        contiene.Cantidad = jsonObject.getInt("Quantity");
-                        contiene.Nombre_Producto = jsonObject.getString("nombre");
-
-                        addContiene(contiene);
-                    }
-                }
-            }
-            catch (JSONException e) {;}
-        }
-
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
     }
 
+    public class TalkToServer extends AsyncTask<Void, Void, Void> {
 
-    @Override
-    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
+        @Override
+        protected void onPreExecute() {
+        /*
+         *    do things before doInBackground() code runs
+         *    such as preparing and showing a Dialog or ProgressBar
+        */
+        }
 
+        @Override
+        protected void onProgressUpdate(Void... values) {
+        /*
+         *    updating data
+         *    such a Dialog or ProgressBar
+        */
+
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            syncing = true;
+            httpConnection conexion = httpConnection.getConnection();
+
+            //Se envian todos los cambios hechos en la aplicación al Web Service
+            String selectQuery = "SELECT * FROM LOG";
+            Cursor cursor = DBHanlder.getReadableDatabase().rawQuery(selectQuery, null);
+
+            Registro registro;
+            // looping through all rows and adding to list
+            if (cursor.moveToFirst()) {
+                do {
+                    registro = new Registro();
+                    registro.Id_Log = cursor.getLong(cursor.getColumnIndex("id_log"));
+                    registro.type = cursor.getString(cursor.getColumnIndex("tipo"));
+                    registro.url = cursor.getString(cursor.getColumnIndex("url"));
+                    registro.json = cursor.getString(cursor.getColumnIndex("json"));
+
+                    Log.i("dato", registro.type);
+                    Log.i("dato", registro.url);
+
+                    switch (registro.type) {
+                        case "POST":
+                            if(conexion.sendPost(registro.url, registro.json))
+                                deleteFromDB("LOG", "id_log", Long.toString(registro.Id_Log));
+                            break;
+                        case "DELETE":
+                            if(conexion.sendDelete(registro.url))
+                                deleteFromDB("LOG", "id_log", Long.toString(registro.Id_Log));
+                            break;
+                        case "PUT":
+                            if(conexion.sendPut(registro.url))
+                                deleteFromDB("LOG", "id_log", Long.toString(registro.Id_Log));
+                            break;
+                    }
+                } while (cursor.moveToNext());
+            }
+
+            //Si se logró enviar todos los cambios se envian se solicitan todos los cambios realizados
+            //en el WebService
+            String usersJson = conexion.sendGet("getAllUsuario");
+            String rolJson = conexion.sendGet("getAllRol_Usuario");
+            String categoriaJson = conexion.sendGet("getAllCategories");
+            String productoJson = conexion.sendGet("getAllProducto");
+            String pedidoJson = conexion.sendGet("getAllPedido");
+
+
+
+            //Si no se logró obtener todos los datos de la base de datos no hacer nada
+            if((usersJson != null) && (rolJson != null) && (categoriaJson != null) && (productoJson != null) && (pedidoJson != null) ){
+                //Se colocan los nuevos datos sobre la base de datos
+                Usuario user;
+                Categoria categoria;
+                Producto producto;
+                Pedido pedido;
+                Contiene contiene;
+
+                try {
+                    JSONArray usersArray = new JSONArray(usersJson);
+                    JSONArray rolArray = new JSONArray(rolJson);
+                    JSONArray CategoryArray = new JSONArray(categoriaJson);
+                    JSONArray productArray = new JSONArray(productoJson);
+                    JSONArray pedidoArray = new JSONArray(pedidoJson);
+
+                    updatingDB = true;
+                    //Aquí si limpia la base de datos empotrada
+                    clearDatabase();
+
+                    //USUARIO
+                    //Iterate the jsonArray and print the info of JSONObjects
+                    for(int i=0; i < usersArray.length(); i++){
+                        JSONObject jsonObject = usersArray.getJSONObject(i);
+
+                        ContentValues values = new ContentValues();
+
+                        values.put("Cedula", jsonObject.getLong("Id_usuario"));
+                        values.put("Nombre", jsonObject.getString("Nombre"));
+                        values.put("Apellido", jsonObject.getString("Apellido"));
+                        values.put("Lugar_de_Residencia", jsonObject.getString("Residencia"));
+                        values.put("Fecha_de_Nacimiento", jsonObject.getString("Fecha_de_Nacimiento"));
+                        values.put("Telefono", jsonObject.getInt("Telefono"));
+
+                        insertInDB("USUARIO", values);
+                    }
+
+
+                    //ROL
+                    //Iterate the jsonArray and print the info of JSONObjects
+                    for(int i=0; i < rolArray.length(); i++){
+                        JSONObject jsonObject = rolArray.getJSONObject(i);
+
+                        ContentValues values = new ContentValues();
+
+                        values.put("usuario", jsonObject.getLong("Id_usuario"));
+                        values.put("rol", jsonObject.getLong("Id_rol"));
+
+                        SQLiteDatabase db = DBHanlder.getWritableDatabase();
+                        db.insert("ROL_USUARIO", null, values);
+                    }
+
+                    //Categoria
+                    //Iterate the jsonArray and print the info of JSONObjects
+                    for(int i=0; i < CategoryArray.length(); i++){
+                        JSONObject jsonObject = CategoryArray.getJSONObject(i);
+
+                        ContentValues values = new ContentValues();
+                        values.put("Nombre", jsonObject.getString("Nombre"));
+                        values.put("Descripcion", jsonObject.getString("Descripcion"));
+
+                        insertInDB("CATEGORIA", values);
+                    }
+
+                    //Producto
+                    //Iterate the jsonArray and print the info of JSONObjects
+                    for(int i=0; i < productArray.length(); i++){
+                        JSONObject jsonObject = productArray.getJSONObject(i);
+
+                        ContentValues values = new ContentValues();
+
+                        values.put("Nombre_Producto", jsonObject.getString("nombre"));
+                        values.put("Id_Sucursal", jsonObject.getLong("id_Sucursal"));
+                        values.put("Cedula_Provedor", jsonObject.getLong("Cedula_Provedor"));
+                        values.put("Nombre_Categoría", jsonObject.getString("categoria"));
+                        values.put("Descripción", jsonObject.getString("Descripcion"));
+                        if(jsonObject.getBoolean("Exento"))
+                            values.put("Exento", "true");
+                        else
+                            values.put("Exento", "false");
+                        values.put("Cantidad_Disponible", jsonObject.getInt("Cantidad_Disponible"));
+                        values.put("Precio", jsonObject.getInt("Precio"));
+
+                        insertInDB("PRODUCTO", values);
+                    }
+
+                    Long idPedido;
+                    //Pedido
+                    //Iterate the jsonArray and print the info of JSONObjects
+                    for(int i=0; i < pedidoArray.length(); i++){
+                        JSONObject jsonObject = pedidoArray.getJSONObject(i);
+
+                        ContentValues values = new ContentValues();
+
+                        idPedido = jsonObject.getLong("id_Pedido");
+                        values.put("Id_Pedido", idPedido);
+                        values.put("Cedula_Cliente", jsonObject.getLong("Cedula_Cliente"));
+
+                        values.put("Id_Sucursal", jsonObject.getLong("id_Sucursal"));
+                        values.put("Telefono_Preferido", jsonObject.getInt("Telefono"));
+                        values.put("Hora_de_Creación", jsonObject.getString("Hora"));
+
+                        insertInDB("PEDIDO", values);
+
+                        JSONArray listaContiene = jsonObject.getJSONArray("productos");
+
+
+                        for(int j = 0; j < listaContiene.length(); j++){
+                            JSONObject jsonObject2;
+                            jsonObject2 = listaContiene.getJSONObject(j);
+
+                            ContentValues valuesContiene = new ContentValues();
+
+                            valuesContiene.put("Cantidad", jsonObject2.getInt("Quantity"));
+                            valuesContiene.put("Nombre_Producto", jsonObject2.getString("nombre"));
+                            valuesContiene.put("Id_Pedido", idPedido);
+
+                            insertInDB("CONTIENE", valuesContiene);
+                        }
+                        updatingDB = false;
+                    }
+
+                }
+                catch (JSONException e) {
+                    Log.i("!!!!!!!!!!!!!!!!!!!!!", "Failed to get all arrays");
+                    Log.i("error", e.getMessage());
+                }
+            }
+            DBHanlder.getWritableDatabase().close();
+            syncing = false;
+            return null;
+        }
+
+
+        @Override
+        protected void onPostExecute(Void result) {
+        /*
+         *    do something with data here
+         *    display it or send to mainactivity
+         *    close any dialogs/ProgressBars/etc...
+        */
+        }
+    }
+
+
+
+    public void SyncDB(){
+        new TalkToServer().execute();
     }
 
     //Métodos para la tabla Usuario
@@ -334,27 +390,26 @@ public class DBHandler extends SQLiteOpenHelper {
 
         insertInDB("USUARIO", values);
 
-        if(!syncing){
-            JSONObject json = new JSONObject();
-            try {
-                json.put("Cedula", usuario.Cedula);
-                json.put("Nombre", usuario.Nombre);
-                json.put("Apellido", usuario.Apellido);
-                json.put("Lugar_de_Residencia", usuario.Lugar_de_Residencia);
-                json.put("Fecha_de_Nacimiento", usuario.Fecha_de_Nacimiento);
-                json.put("Telefono", usuario.Telefono);
+        JSONObject json = new JSONObject();
+        try {
+            json.put("Id_usuario", usuario.Cedula);
+            json.put("Nombre", usuario.Nombre);
+            json.put("Apellido", usuario.Apellido);
+            json.put("Residencia", usuario.Lugar_de_Residencia);
+            json.put("Fecha_de_Nacimiento", usuario.Fecha_de_Nacimiento);
+            json.put("Telefono", usuario.Telefono);
 
-                ContentValues logvalues = new ContentValues();
-                logvalues.put("tipo", "POST");
-                logvalues.put("url", "Usuario");
-                logvalues.put("json", json.toString());
+            ContentValues logvalues = new ContentValues();
+            logvalues.put("tipo", "POST");
+            logvalues.put("url", "Usuario");
+            logvalues.put("json", json.toString());
 
-                insertInDB("LOG", logvalues);
+            insertInDB("LOG", logvalues);
 
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+
     }
 
     /**
@@ -375,43 +430,43 @@ public class DBHandler extends SQLiteOpenHelper {
                 values.put("rol", 1);//Estos valores dependen de los roles creados
                 break;
             }
+            case "Vendedor":{
+                values.put("rol", 3);//Estos valores dependen de los roles creados
+                break;
+            }
         }
 
         SQLiteDatabase db = this.getWritableDatabase();
         db.insert("ROL_USUARIO", null, values);
-        db.close();
-
         if(!syncing){
-            JSONObject json = new JSONObject();
-            try {
-                json.put("usuario", userID);
-                json.put("rol", rol);
-
-                ContentValues logvalues = new ContentValues();
-                logvalues.put("tipo", "POST");
-                logvalues.put("url", "Rol_Usuario");
-                logvalues.put("json", json.toString());
-
-                insertInDB("LOG", logvalues);
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            db.close();
         }
 
+        JSONObject json = new JSONObject();
+        try {
+            json.put("Id_usuario", userID);
+            json.put("Id_rol", rol);
 
+            ContentValues logvalues = new ContentValues();
+            logvalues.put("tipo", "POST");
+            logvalues.put("url", "Rol_Usuario");
+            logvalues.put("json", json.toString());
+
+            insertInDB("LOG", logvalues);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public void deleteUsuario(long id){
         deleteFromDB("USUARIO", "Cedula", String.valueOf(id));
 
-        if(!syncing){
-            ContentValues logvalues = new ContentValues();
-            logvalues.put("tipo", "Delete");
-            logvalues.put("url", "Usuario/" + Long.toString(id));
+        ContentValues logvalues = new ContentValues();
+        logvalues.put("tipo", "Delete");
+        logvalues.put("url", "Usuario/" + Long.toString(id));
 
-            insertInDB("LOG", logvalues);
-        }
+        insertInDB("LOG", logvalues);
     }
 
     public void updateUsuario(Usuario usuario){
@@ -495,41 +550,40 @@ public class DBHandler extends SQLiteOpenHelper {
 
         insertInDB("PRODUCTO", values);
 
-        if(!syncing){
-            JSONObject json = new JSONObject();
-            try {
-                json.put("Nombre_Producto", prod.Nombre_Producto);
-                json.put("Id_Sucursal", prod.Id_Sucursal);
-                json.put("Cedula_Provedor", prod.Cedula_Proveedor);
-                json.put("Nombre_Categoría", prod.Nombre_Categoria);
-                json.put("Descripción", prod.descripcion);
-                json.put("Exento", prod.exento);
-                json.put("Cantidad_Disponible", prod.cantidad);
-                json.put("Precio", prod.precio);
+        JSONObject json = new JSONObject();
+        try {
+            json.put("nombre", prod.Nombre_Producto);
+            json.put("id_Sucursal", prod.Id_Sucursal);
+            json.put("Cedula_Provedor", prod.Cedula_Proveedor);
+            json.put("categoria", prod.Nombre_Categoria);
+            json.put("Descripcion", prod.descripcion);
+            if(prod.exento == 0)
+                json.put("Exento", "false");
+            else
+                json.put("Exento", "true");
+            json.put("Cantidad_Disponible", prod.cantidad);
+            json.put("Precio", prod.precio);
 
-                ContentValues logvalues = new ContentValues();
-                logvalues.put("tipo", "POST");
-                logvalues.put("url", "Producto");
-                logvalues.put("json", json.toString());
+            ContentValues logvalues = new ContentValues();
+            logvalues.put("tipo", "POST");
+            logvalues.put("url", "Producto");
+            logvalues.put("json", json.toString());
 
-                insertInDB("LOG", logvalues);
+            insertInDB("LOG", logvalues);
 
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 
     public void deleteProducto(String nombre){
         deleteFromDB("PRODUCTO", "Nombre_Producto", "'"+ nombre+ "'");
 
-        if(!syncing){
-            ContentValues logvalues = new ContentValues();
-            logvalues.put("tipo", "DELETE");
-            logvalues.put("url", "Producto/" + nombre);
+        ContentValues logvalues = new ContentValues();
+        logvalues.put("tipo", "DELETE");
+        logvalues.put("url", "Producto/" + nombre);
 
-            insertInDB("LOG", logvalues);
-        }
+        insertInDB("LOG", logvalues);
     }
 
     public void updateProducto(Producto prod){
@@ -588,35 +642,31 @@ public class DBHandler extends SQLiteOpenHelper {
 
         insertInDB("CATEGORIA", values);
 
-        if(!syncing){
-            JSONObject json = new JSONObject();
-            try {
-                json.put("Nombre", categoria.Nombre);
-                json.put("Descripcion", categoria.Descripcion);
+        JSONObject json = new JSONObject();
+        try {
+            json.put("Nombre", categoria.Nombre);
+            json.put("Descripcion", categoria.Descripcion);
 
-                ContentValues logvalues = new ContentValues();
-                logvalues.put("tipo", "POST");
-                logvalues.put("url", "Categoria");
-                logvalues.put("json", json.toString());
+            ContentValues logvalues = new ContentValues();
+            logvalues.put("tipo", "POST");
+            logvalues.put("url", "Categoria");
+            logvalues.put("json", json.toString());
 
-                insertInDB("LOG", logvalues);
+            insertInDB("LOG", logvalues);
 
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 
     public void deleteCategoria(String nombre){
         deleteFromDB("CATEGORIA", "Nombre", "'" + nombre + "'");
 
-        if(!syncing){
-            ContentValues logvalues = new ContentValues();
-            logvalues.put("tipo", "DELETE");
-            logvalues.put("url", "Categoria/" + nombre);
+        ContentValues logvalues = new ContentValues();
+        logvalues.put("tipo", "DELETE");
+        logvalues.put("url", "Categoria/" + nombre);
 
-            insertInDB("LOG", logvalues);
-        }
+        insertInDB("LOG", logvalues);
     }
 
     public void updateCategoria(Categoria categoria){
@@ -626,13 +676,11 @@ public class DBHandler extends SQLiteOpenHelper {
 
         updateFromDB("CATEGORIA", values, "Nombre= '"+categoria.Nombre + "'");
 
-        if(!syncing){
-            ContentValues logvalues = new ContentValues();
-            logvalues.put("tipo", "PUT");
-            logvalues.put("url", "Categoria/" + categoria.Nombre + "/" + "Descripcion" + "/" + categoria.Descripcion);
+        ContentValues logvalues = new ContentValues();
+        logvalues.put("tipo", "PUT");
+        logvalues.put("url", "Categoria/" + categoria.Nombre + "/" + "Descripción" + "/" + categoria.Descripcion);
 
-            insertInDB("LOG", logvalues);
-        }
+        insertInDB("LOG", logvalues);
     }
 
     public Categoria getCategoria(String nombre){
@@ -656,24 +704,22 @@ public class DBHandler extends SQLiteOpenHelper {
 
         insertInDB("PEDIDO", values);
 
-        if(!syncing){
-            JSONObject json = new JSONObject();
-            try {
-                json.put("Cedula_Cliente", pedido.Cedula_Cliente);
-                json.put("Id_Sucursal", pedido.Id_Sucursal);
-                json.put("Telefono_Preferido", pedido.Telefono_Preferido);
-                json.put("Hora_de_Creación", pedido.Hora_de_Creación);
+        JSONObject json = new JSONObject();
+        try {
+            json.put("Cedula_Cliente", pedido.Cedula_Cliente);
+            json.put("Id_Sucursal", pedido.Id_Sucursal);
+            json.put("Telefono_Preferido", pedido.Telefono_Preferido);
+            json.put("Hora_de_Creación", pedido.Hora_de_Creación);
 
-                ContentValues logvalues = new ContentValues();
-                logvalues.put("tipo", "POST");
-                logvalues.put("url", "Pedido");
-                logvalues.put("json", json.toString());
+            ContentValues logvalues = new ContentValues();
+            logvalues.put("tipo", "POST");
+            logvalues.put("url", "Pedido");
+            logvalues.put("json", json.toString());
 
-                insertInDB("LOG", logvalues);
+            insertInDB("LOG", logvalues);
 
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 
@@ -721,7 +767,7 @@ public class DBHandler extends SQLiteOpenHelper {
         return contiene;
     }
 
-    public void addContiene(Contiene contiene){
+    public void addContiene(Contiene contiene, Pedido pedido){
         ContentValues values = new ContentValues();
 
         values.put("Cantidad", contiene.Cantidad);
@@ -730,15 +776,47 @@ public class DBHandler extends SQLiteOpenHelper {
 
         insertInDB("CONTIENE", values);
 
-        //TODO since the id is different from the one in the WebService this might fail
+        JSONObject json = new JSONObject();
+        try {
+            json.put("userID", pedido.Cedula_Cliente);
+            json.put("time", pedido.Hora_de_Creación);
+            json.put("producto", contiene.Nombre_Producto);
+            json.put("cantidad", contiene.Cantidad);
+
+
+            ContentValues logvalues = new ContentValues();
+            logvalues.put("tipo", "POST");
+            logvalues.put("url", "Contiene");
+            logvalues.put("json", json.toString());
+
+            insertInDB("LOG", logvalues);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //TODO make delete work
+    public void updateContiene(Contiene contiene, Pedido pedido){
+        ContentValues values = new ContentValues();
+
+        values.put("Cantidad", contiene.Cantidad);
+
+        updateFromDB("CONTIENE", values, "id_Contiene="+ contiene.id_Contiene);
+
         if(!syncing){
+            ContentValues logvalues = new ContentValues();
+            logvalues.put("tipo", "PUT");
+            logvalues.put("url", "Contiene");
+
             JSONObject json = new JSONObject();
             try {
-                json.put("Cantidad", contiene.Cantidad);
-                json.put("Nombre_Producto", contiene.Nombre_Producto);
-                json.put("Id_Pedido", contiene.Id_Pedido);
+                json.put("userID", Long.toString(pedido.Cedula_Cliente));
+                json.put("time", pedido.Hora_de_Creación);
+                json.put("producto", contiene.Nombre_Producto);
+                json.put("cantidad", contiene.Cantidad);
 
-                ContentValues logvalues = new ContentValues();
+
                 logvalues.put("tipo", "POST");
                 logvalues.put("url", "Contiene");
                 logvalues.put("json", json.toString());
@@ -751,38 +829,17 @@ public class DBHandler extends SQLiteOpenHelper {
         }
     }
 
-    public void updateContiene(Contiene contiene, Pedido pedido){
-        ContentValues values = new ContentValues();
-
-        values.put("Cantidad", contiene.Cantidad);
-
-        insertInDB("CONTIENE", values);
-
-        //This can be  change in EPATEC to select according to productoName, userId and creation Time
-        if(!syncing){
-            ContentValues logvalues = new ContentValues();
-            logvalues.put("tipo", "PUT");
-            logvalues.put("url", "Contiene/" + Long.toString(pedido.Cedula_Cliente) + "/"  +
-                    pedido.Hora_de_Creación + "/"  + contiene.Nombre_Producto + "/" + "Cantidad" + "/" + contiene.Cantidad);
-
-
-            insertInDB("LOG", logvalues);
-        }
-    }
-
     public void deletePedido(long id){
         deleteFromDB("PEDIDO", "Id_Pedido", String.valueOf(id));
 
         //TODO this doesn't work since the id inside of the app isn't the same as in the webService!!!
         //This could be changed by selecting in EPATEC acording to userID and creationYime
-        if(!syncing){
-            ContentValues logvalues = new ContentValues();
-            logvalues.put("tipo", "DELETE");
-            logvalues.put("url", "Pedido");
-            logvalues.put("json", Long.toString(id));
+        ContentValues logvalues = new ContentValues();
+        logvalues.put("tipo", "DELETE");
+        logvalues.put("url", "Pedido");
+        logvalues.put("json", Long.toString(id));
 
-            insertInDB("LOG", logvalues);
-        }
+        insertInDB("LOG", logvalues);
     }
 
     public void updatePedido(Pedido pedido){
@@ -870,22 +927,27 @@ public class DBHandler extends SQLiteOpenHelper {
      */
     public void clearDatabase() {
         SQLiteDatabase db = this.getWritableDatabase();
-        String clearDBQuery = "DELETE FROM CONTIENE";
+        String clearDBQuery = "DELETE FROM CONTIENE; ";
         db.execSQL(clearDBQuery);
 
-        clearDBQuery = "DELETE FROM PEDIDO";
+        clearDBQuery = "DELETE FROM PEDIDO;";
+        db = this.getWritableDatabase();
         db.execSQL(clearDBQuery);
 
-        clearDBQuery = "DELETE FROM PRODUCTO";
+        clearDBQuery = "DELETE FROM PRODUCTO;";
+        db = this.getWritableDatabase();
         db.execSQL(clearDBQuery);
 
-        clearDBQuery = "DELETE FROM CATEGORIA";
+        clearDBQuery = "DELETE FROM CATEGORIA;";
+        db = this.getWritableDatabase();
         db.execSQL(clearDBQuery);
 
-        clearDBQuery = "DELETE FROM ROL_USUARIO";
+        clearDBQuery = "DELETE FROM ROL_USUARIO;";
+        db = this.getWritableDatabase();
         db.execSQL(clearDBQuery);
 
-        clearDBQuery = "DELETE FROM USUARIO";
+        clearDBQuery = "DELETE FROM USUARIO;";
+        db = this.getWritableDatabase();
         db.execSQL(clearDBQuery);
     }
 
@@ -893,32 +955,47 @@ public class DBHandler extends SQLiteOpenHelper {
     public void insertInDB(String table, ContentValues values){
         SQLiteDatabase db = this.getWritableDatabase();
         db.insert(table, null, values);
-        db.close();
+        if(!syncing){
+            db.close();
+        }
     }
 
     //Método elimina un registro de la tabla deseada
     public void deleteFromDB(String table, String propiedad, String value){
+        //TODO check that deletion is being performed correctly
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(table, propiedad+"="+value, null);
-        db.close();
+        if(!syncing){
+            db.close();
+        }
     }
 
     public void updateFromDB(String table, ContentValues values, String upFilter){
+        //TODO, check that update is being logged
         SQLiteDatabase db = this.getWritableDatabase();
         db.update(table, values, upFilter, null);
-        db.close();
+        if(!syncing){
+            db.close();
+        }
     }
 
     public Cursor getRowFromDB(String table, String row, String id){
+        //Asegura que no se envien datos sucios
+        while(updatingDB){
+            sleep(50);
+        }
         SQLiteDatabase db = this.getReadableDatabase();
 
         String selectQuery = "SELECT * FROM " + table + " WHERE " + row + " = " + id;
 
+        Log.i("selectQuery", selectQuery);
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         if (cursor != null) {cursor.moveToFirst();}
-        
-        db.close();
+
+        if(!syncing){
+            db.close();
+        }
         
         return cursor;
     }
@@ -1014,8 +1091,10 @@ public class DBHandler extends SQLiteOpenHelper {
                 productos.add(producto);
             } while (cursor.moveToNext());
         }
-        
-        db.close();
+
+        if(!syncing){
+            db.close();
+        }
         return productos;
     }
 
@@ -1038,7 +1117,9 @@ public class DBHandler extends SQLiteOpenHelper {
             } while (cursor.moveToNext());
         }
 
-        db.close();
+        if(!syncing){
+            db.close();
+        }
         return categorias;
     }
 
@@ -1046,8 +1127,6 @@ public class DBHandler extends SQLiteOpenHelper {
         List<String> roles = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        //String selectQuery = "SELECT R.nombre as name FROM ((ROL as R JOIN ROL_USUARIO as RU ON R.Id_rol = RU.rol) " +
-        //        "JOIN USUARIO as U ON U.Cedula = RU.usuario) WHERE U.Cedula =" + Long.toString(userID) + ";";
 
         String selectQuery = "SELECT R.nombre as nombre, U.Nombre as usuario FROM ROL R " +
                 "JOIN ROL_USUARIO RU ON R.Id_rol = RU.rol " +
@@ -1065,7 +1144,9 @@ public class DBHandler extends SQLiteOpenHelper {
             } while (cursor.moveToNext());
         }
 
-        db.close();
+        if(!syncing){
+            db.close();
+        }
         return roles;
     }
     /*

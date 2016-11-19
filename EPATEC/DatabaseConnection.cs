@@ -170,9 +170,7 @@ namespace DatabaseConnection
                                     user.Id_usuario = (long)reader["Cedula"];
                                     user.Nombre = (string)reader["Nombre"];
                                     user.Apellido = (string)reader["Apellido"];
-                                    System.Diagnostics.Debug.WriteLine("pasa 1");
                                     user.Penalizacion = Int16.Parse(reader["Grado_de_Penalizacion"].ToString());
-                                    System.Diagnostics.Debug.WriteLine("pasa 2");
                                     user.Residencia = (string)reader["Lugar_de_Residencia"];
                                     user.Fecha_de_Nacimiento = ((DateTime)reader["Fecha_de_Nacimiento"]).ToString("MM-dd-yyyy");
                                     user.Telefono = (int)reader["Telefono"];
@@ -991,6 +989,53 @@ namespace DatabaseConnection
             myparm[2] = new SqlParameter("@cantidad", contiene.cantidad);
             string command = "INSERT INTO CONTIENE VALUES (@nombre_producto, @id_pedido, @cantidad);";
             ExecuteCommandWrite(command, myparm);
+        }//End of the method
+
+
+        /// <summary>
+        /// Insert a Contain object in the DB
+        /// </summary>
+        /// <param name="rol">new contain</param>
+        public void crear_Contiene(long userID, string time, string producto, string cantidad)
+        {
+            SqlParameter[] myparm = new SqlParameter[2];
+            myparm[0] = new SqlParameter("@id", userID);
+            myparm[1] = new SqlParameter("@time", time);
+            Pedido pedido = new Pedido();
+
+            long id_Pedido = -1;
+            string command = "SELECT * FROM PEDIDO WHERE Cedula_Cliente = @id AND Hora_de_Creación = @time;";
+            try
+            {
+                using (myConnection = new SqlConnection(connectionString))
+                {
+                    myConnection.Open();
+                    using (SqlCommand comando = new SqlCommand(command, myConnection))
+                    {
+                        comando.Parameters.AddRange(myparm);
+                        using (SqlDataReader reader = comando.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                id_Pedido = (long)reader["Id_Pedido"];
+                            }
+                        }//end using
+                    }//end using
+                }//end using
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine("Error en get_Pedido: " + e.Message);
+            }//End of the catch
+
+
+            SqlParameter[] parmContiene = new SqlParameter[3];
+            //Add the parameter
+            parmContiene[0] = new SqlParameter("@nombre_producto", producto);
+            parmContiene[1] = new SqlParameter("@id_pedido", id_Pedido);
+            parmContiene[2] = new SqlParameter("@cantidad", cantidad);
+            string command2 = "INSERT INTO CONTIENE VALUES (@nombre_producto, @id_pedido, @cantidad);";
+            ExecuteCommandWrite(command2, parmContiene);
         }//End of the method
 
         /// <summary>
@@ -1926,6 +1971,79 @@ namespace DatabaseConnection
             SqlParameter myparm2 = new SqlParameter("@id", id);
             ExecuteCommandWriteOneParam(command, myparm2);
         }//End of the method
+		
+		/// <summary>
+        /// Get the order of a client
+        /// </summary>
+        /// <param name="cedula">id of the client</param>
+        /// <returns>the list of order</returns>
+        public List<Pedido> get_AllPedido()
+        {
+            string command = "SELECT * FROM PEDIDO;";
+            try
+            {
+                using (myConnection = new SqlConnection(connectionString))
+                {
+                    myConnection.Open();
+                    using (SqlCommand comando = new SqlCommand(command, myConnection))
+                    {
+                        using (SqlDataReader reader = comando.ExecuteReader())
+                        {
+                            Pedido pedido;
+                            if (reader.HasRows)
+                            {
+                                List<Pedido> PedidosCliente = new List<Pedido>();
+                                while (reader.Read())
+                                {
+                                    pedido = new Pedido();
+                                    long id = (long)reader["Id_Pedido"];
+                                    pedido.id_Pedido = id;
+                                    pedido.Cedula_Cliente = (long)reader["Cedula_Cliente"];
+                                    pedido.id_Sucursal = (long)reader["Id_Sucursal"];
+                                    pedido.Telefono = (int)reader["Telefono_Preferido"];
+                                    pedido.Hora = ((DateTime)reader["Hora_de_Creación"]).ToString();
+
+                                    pedido.productos = new List<ProductoPedido>();
+                                    using (SqlConnection myConnection2 = new SqlConnection(connectionString))
+                                    {
+                                        myConnection2.Open();
+                                        string command2 = "SELECT * FROM PRODUCTO JOIN CONTIENE ON PRODUCTO.Nombre_Producto = CONTIENE.Nombre_Producto WHERE CONTIENE.Id_Pedido = @id";
+                                        using (SqlCommand comando2 = new SqlCommand(command2, myConnection2))
+                                        {
+                                            comando2.Parameters.AddWithValue("@id", id);
+                                            using (SqlDataReader reader2 = comando2.ExecuteReader())
+                                            {
+                                                ProductoPedido producto;
+                                                if (reader2.HasRows)
+                                                {
+                                                    while (reader2.Read())
+                                                    {
+                                                        producto = new ProductoPedido();
+                                                        producto.nombre = (string)reader2["Nombre_Producto"];
+                                                        producto.Quantity = (int)reader2["Cantidad"];
+                                                        pedido.productos.Add(producto);
+                                                    }//End of while
+                                                }//End of if
+                                            }//End of using
+                                        }//End of using
+                                    }//End of using
+                                    PedidosCliente.Add(pedido);
+                                }//End of while
+                                return PedidosCliente;
+                            }//End of if
+                            else
+                            {
+                                return null;
+                            }
+                        }//End of using
+                    }//End of using
+                }//End of using
+            } catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine("Error en get_PedidoCliente: " + e.Message);
+                return null;
+            }//End of the catch
+        }//End of the mthod
 
         /// <summary>
         /// Get the order of a client

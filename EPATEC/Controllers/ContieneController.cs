@@ -31,16 +31,16 @@ namespace EPATEC.Controllers
             return Ok(products);
         }
 
-        [Route("{userID}/{time}/{producto}/{campo}/{newValue}")]
+
         [HttpPut]
-        public IHttpActionResult PutContieneSinID(long userID, string time, string producto, string campo, string newValue)
+        [Route("")]
+        public IHttpActionResult updateContieneSinID([FromBody]Models.ContieneSinId contiene)
         {
-            if (campo == "Cantidad")
-            {   
-                Connection.Instance.update_Contiene_Cantidad(userID, time, producto, newValue);
-            }
+            //Se asume que siempre se hace un update sobre la cantidad
+            Connection.Instance.update_Contiene_Cantidad(contiene.userID, contiene.time, contiene.producto, contiene.cantidad);
             return Ok();
         }
+        
 
         [Route("{id}/{campo}/{newValue}")]
         [HttpPut]
@@ -53,11 +53,22 @@ namespace EPATEC.Controllers
             return Ok();
         }
 
+        /*
+
         [HttpPost]
         [Route("")]
         public IHttpActionResult postContiene([FromBody]Models.Contiene contiene)
         {
             Connection.Instance.crear_Contiene(contiene);
+            return Ok();
+        }
+        */
+		
+		[HttpPost]
+        [Route("")]
+        public IHttpActionResult postContiene([FromBody]Models.ContieneSinId contiene)
+        {
+            Connection.Instance.crear_Contiene(contiene.userID, contiene.time, contiene.producto, contiene.cantidad);
             return Ok();
         }
 

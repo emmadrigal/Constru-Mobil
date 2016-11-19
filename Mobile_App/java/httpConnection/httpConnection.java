@@ -1,7 +1,10 @@
 package httpConnection;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.util.Log;
+
+import java.net.URL;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -9,11 +12,11 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class httpConnection {
+public class httpConnection  {
     private static httpConnection singleton;
     //TODO get this information from user
-    public static String serviceIp = "192.168.1.163";
-    public static  String port      = "62801";
+    public static String serviceIp = "192.168.43.163";
+    public static  String port      = "1515";
     private final OkHttpClient client = new OkHttpClient();
 
     private static final MediaType JSON
@@ -45,7 +48,6 @@ public class httpConnection {
      */
     public String sendGet(String url){
         url = "http://" + serviceIp + ":" + port + "/" + url;
-        Log.i("http", url);
         String respuesta = "";
         try {
             Request request = new Request.Builder()
@@ -53,18 +55,15 @@ public class httpConnection {
                     .build();
 
             Response response = client.newCall(request).execute();
-            if(response.code() == 200){//200 es el código de ok
-                respuesta =  response.body().string();
-            } else{
-                respuesta = null;
-            }
+            respuesta =  response.body().string();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Log.i("Response", respuesta);
         return respuesta;
     }
+
+
 
     /**
      * Sends a json to the Web Service in order to create a new entity
@@ -74,13 +73,15 @@ public class httpConnection {
     public boolean sendPost(String url, String json){
         url = "http://" + serviceIp + ":" + port + "/" + url;
         Log.i("http", url);
-        Log.i("http", json);
+        if(json != null){
+            Log.i("http", json);
+        }
         try {
             RequestBody body = RequestBody.create(JSON, json);
-            Request request = new Request.Builder()
-                    .url(url)
-                    .post(body)
-                    .build();
+            Request  request = new Request.Builder()
+                        .url(url)
+                        .post(body)
+                        .build();
             Response response = client.newCall(request).execute();
 
             Log.d("codigo", Integer.toString(response.code()));
